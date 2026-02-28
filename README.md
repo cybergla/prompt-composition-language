@@ -6,8 +6,8 @@ PCL is a small DSL for authoring, composing, and managing LLM prompts as modular
 
 ## Features
 
-- **Blocks** — define named fragments with `@block name:`, include them with `@include`
-- **Imports** — split prompts across files, import with `@import ./file.pcl [as ns]`
+- **Blocks** — define named fragments with `@block name:`, compose them with `@include`
+- **Imports** — split prompts across files with `@import ./file.pcl [as ns]`
 - **Variables** — `${var}` resolved at render time; `${var | default}` for fallbacks
 - **Conditionals** — `@if variable:` / `@if not variable:` for truthiness-based branching
 - **Raw blocks** — `@raw` / `@end` passes content through unmodified (no interpolation)
@@ -40,7 +40,7 @@ pcl --help
 
 ### `pcl compile`
 
-Compile a `.pcl` file and print the output. Variables with defaults are resolved; undefined variables with no default cause an error.
+Parse and compile a `.pcl` file, printing the output. Variables with defaults resolve to their defaults; variables with no default cause an error.
 
 ```bash
 pcl compile examples/agent.pcl
@@ -57,11 +57,11 @@ pcl render examples/agent.pcl \
   --var premium=true
 ```
 
-Variables are passed as `key=value`. `true` and `false` are coerced to booleans.
+`--var` accepts `key=value`. Values `true` and `false` are coerced to booleans.
 
 ### `pcl check`
 
-Validate a `.pcl` file without producing output. Exits `0` on success, `1` on error.
+Validate a `.pcl` file without producing output. Exits `0` on success, `1` on error. Prints the error message and line number on failure.
 
 ```bash
 pcl check examples/agent.pcl
@@ -69,10 +69,12 @@ pcl check examples/agent.pcl
 
 ### `pcl watch`
 
-Recompile a file automatically whenever it changes. Accepts the same `--var` flags as `render`.
+Recompile whenever the file changes. Accepts the same `--var` flags as `render`.
 
 ```bash
-pcl watch examples/agent.pcl --var date=2026-02-28 --var premium=false
+pcl watch examples/agent.pcl \
+  --var date=2026-02-28 \
+  --var premium=false
 ```
 
 ---
@@ -82,11 +84,11 @@ pcl watch examples/agent.pcl --var date=2026-02-28 --var premium=false
 ```python
 from pcl import compile, render
 
-# Compile — parse and resolve imports; variables remain unresolved
+# compile() — parse and resolve imports; variables remain unresolved
 template = compile("examples/agent.pcl")
 print(template.metadata)   # {"version": 1.0, "description": "..."}
 
-# Render — fully resolved output string
+# render() — fully resolved output string
 prompt = render("examples/agent.pcl", variables={
     "date": "2026-02-28",
     "query": "What is alignment?",
@@ -102,7 +104,7 @@ print(prompt)
 ```pcl
 ---
 version: 1.0
-description: Optional YAML frontmatter (not in output)
+description: Optional YAML frontmatter — available as metadata, not in output
 ---
 
 @import ./other.pcl
@@ -111,10 +113,10 @@ description: Optional YAML frontmatter (not in output)
 # This is a comment — stripped from output
 
 @block intro:
-    This block is defined but not yet emitted.
+    Defined here, emitted only when @include'd.
 
 @include intro          # emit a local block
-@include lib.greet      # emit a block from an imported file
+@include lib.greet      # emit a named block from an imported file
 @include other          # emit the entire body of other.pcl
 
 @if premium:
@@ -123,11 +125,11 @@ description: Optional YAML frontmatter (not in output)
 @if not premium:
     Shown only when premium is falsy or absent.
 
-Hello ${name}!                  # required variable
-Hello ${name | world}!          # variable with default
+Hello ${name}!              # required variable — error if missing
+Hello ${name | world}!      # variable with default
 
 @raw
-${not_interpolated}  @not_a_directive
+${not_interpolated}  @not_a_directive  # this is not a comment
 @end
 
 \@block  →  literal @block in output
@@ -147,8 +149,6 @@ The `examples/` directory contains a multi-file prompt:
 | `examples/persona.pcl` | Persona blocks (`researcher`, `brief`) |
 | `examples/tools.pcl` | Tool description blocks (`search`, `browse`, `premium_index`) |
 
-Try it:
-
 ```bash
 pcl render examples/agent.pcl \
   --var date=2026-02-28 \
@@ -158,7 +158,7 @@ pcl render examples/agent.pcl \
 
 ---
 
-## Running Tests
+## Tests
 
 ```bash
 uv run pytest tests/ -v
@@ -174,38 +174,27 @@ uv run pytest tests/ --cov=pcl --cov-report=term-missing
 
 ## VS Code Extension
 
-Syntax highlighting lives in a separate repo: `src/pcl-vscode`. To install locally:
-
-```bash
-cp -r ../pcl-vscode ~/.vscode/extensions/pcl-language-0.1.0
-```
-
-Or symlink to pick up grammar changes without re-copying:
-
-```bash
-ln -s "$(pwd)/../pcl-vscode" ~/.vscode/extensions/pcl-language-0.1.0
-```
-
-Then reload VS Code (`Cmd+Shift+P` → **Developer: Reload Window**).
+Syntax highlighting is in a separate repo: [`src/pcl-vscode`](../pcl-vscode).
 
 ---
 
 ## Project Structure
 
 ```
-src/pcl/               ← Python package
-  __init__.py          # compile, render exports
-  parser.py            # line-by-line parser → AST
-  compiler.py          # AST walker → string + metadata
-  cli.py               # Typer app
-  errors.py            # PCLError with line numbers
-tests/
-  test_parser.py
-  test_compiler.py
-  test_cli.py
-examples/
-  agent.pcl
-  persona.pcl
-  tools.pcl
-pyproject.toml
+src/pcl/                ← this repo
+  src/pcl/              ← Python package source
+    __init__.py         # compile, render exports
+    parser.py           # line-by-line parser → AST
+    compiler.py         # AST walker → string + metadata
+    cli.py              # Typer app
+    errors.py           # PCLError with line numbers
+  tests/
+    test_parser.py
+    test_compiler.py
+    test_cli.py
+  examples/
+    agent.pcl
+    persona.pcl
+    tools.pcl
+  pyproject.toml
 ```
