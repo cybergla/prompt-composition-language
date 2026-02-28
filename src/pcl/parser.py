@@ -135,14 +135,14 @@ class _Parser:
     # ------------------------------------------------------------------
 
     def _parse_frontmatter(self) -> FrontmatterNode | None:
-        if self._peek() != "---":
+        if self._peek() is None or self._peek().strip() != "---":
             return None
         start = self._lineno
         self._advance()  # consume opening ---
         yaml_lines: list[str] = []
         while not self._at_end():
             raw = self._peek()
-            if raw == "---":
+            if raw.strip() == "---":
                 self._advance()
                 try:
                     data = yaml.safe_load("\n".join(yaml_lines)) or {}

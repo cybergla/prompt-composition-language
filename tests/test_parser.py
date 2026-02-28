@@ -68,6 +68,12 @@ class TestFrontmatter:
         pf = parse(src)
         assert pf.frontmatter.line == 1
 
+    def test_frontmatter_tolerates_leading_whitespace_on_delimiters(self):
+        src = " ---\nversion: 1.0\n ---\nBody\n"
+        pf = parse(src)
+        assert pf.frontmatter is not None
+        assert pf.frontmatter.data["version"] == 1.0
+
 
 class TestComments:
     def test_comment_line_stripped(self):
