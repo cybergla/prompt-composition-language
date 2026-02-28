@@ -101,17 +101,21 @@ def check(file: str = typer.Argument(..., help="Path to .pcl file")) -> None:
 
 
 @app.command()
-def watch(file: str = typer.Argument(..., help="Path to .pcl file")) -> None:
+def watch(
+    file: str = typer.Argument(..., help="Path to .pcl file"),
+    var: list[str] = typer.Option([], "--var", help="Variable as key=value"),
+) -> None:
     """Watch a .pcl file and recompile on change."""
     from watchdog.observers import Observer
     from watchdog.events import FileSystemEventHandler
     import time
 
     path = Path(file).resolve()
+    variables = _parse_vars(var)
 
     def _compile_and_print() -> None:
         try:
-            result = pcl_render(path, variables={})
+            result = pcl_render(path, variables=variables)
             typer.echo(result, nl=False)
         except (PCLError, FileNotFoundError) as exc:
             typer.echo(f"Error: {exc}", err=True)
