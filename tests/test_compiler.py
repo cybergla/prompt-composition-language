@@ -55,7 +55,7 @@ class TestBasicOutput:
         assert result == "Line one\n\nLine two\n"
 
     def test_block_definition_not_in_output(self, tmp_path):
-        f = make_file(tmp_path, "a.pcl", "block foo:\n    body text\n")
+        f = make_file(tmp_path, "a.pcl", "@block foo:\n    body text\n")
         result = pcl_render(f)
         assert result == ""
 
@@ -89,20 +89,20 @@ class TestBasicOutput:
 
 class TestBlocksAndIncludes:
     def test_include_emits_block_body(self, tmp_path):
-        src = "block greeting:\n    Hello there.\n\n@include greeting\n"
+        src = "@block greeting:\n    Hello there.\n\n@include greeting\n"
         f = make_file(tmp_path, "a.pcl", src)
         result = pcl_render(f)
         assert "Hello there." in result
 
     def test_block_definition_not_duplicated(self, tmp_path):
-        src = "block greeting:\n    Hello there.\n\n@include greeting\n"
+        src = "@block greeting:\n    Hello there.\n\n@include greeting\n"
         f = make_file(tmp_path, "a.pcl", src)
         result = pcl_render(f)
         # only one occurrence from the include, not two
         assert result.count("Hello there.") == 1
 
     def test_include_respects_position(self, tmp_path):
-        src = "Before\n\nblock note:\n    [note]\n\nAfter\n\n@include note\n"
+        src = "Before\n\n@block note:\n    [note]\n\nAfter\n\n@include note\n"
         f = make_file(tmp_path, "a.pcl", src)
         result = pcl_render(f)
         lines = [l for l in result.splitlines() if l.strip()]
@@ -110,8 +110,8 @@ class TestBlocksAndIncludes:
 
     def test_block_composed_of_includes(self, tmp_path):
         src = (
-            "block a:\n    Part A\n\n"
-            "block b:\n    @include a\n\n"
+            "@block a:\n    Part A\n\n"
+            "@block b:\n    @include a\n\n"
             "@include b\n"
         )
         f = make_file(tmp_path, "a.pcl", src)
@@ -124,7 +124,7 @@ class TestBlocksAndIncludes:
             pcl_render(f)
 
     def test_circular_include_raises(self, tmp_path):
-        src = "block a:\n    @include a\n\n@include a\n"
+        src = "@block a:\n    @include a\n\n@include a\n"
         f = make_file(tmp_path, "a.pcl", src)
         with pytest.raises(PCLError, match="[Cc]ircular"):
             pcl_render(f)
@@ -143,13 +143,13 @@ class TestCrossFileImports:
         assert "Fragment body" in result
 
     def test_include_named_block_from_import(self, tmp_path):
-        make_file(tmp_path, "lib.pcl", "block greet:\n    Hi from lib\n")
+        make_file(tmp_path, "lib.pcl", "@block greet:\n    Hi from lib\n")
         main = make_file(tmp_path, "main.pcl", "@import ./lib.pcl\n@include lib.greet\n")
         result = pcl_render(main)
         assert "Hi from lib" in result
 
     def test_import_as_namespace(self, tmp_path):
-        make_file(tmp_path, "lib.pcl", "block greet:\n    Hi from lib\n")
+        make_file(tmp_path, "lib.pcl", "@block greet:\n    Hi from lib\n")
         main = make_file(tmp_path, "main.pcl", "@import ./lib.pcl as tools\n@include tools.greet\n")
         result = pcl_render(main)
         assert "Hi from lib" in result
@@ -203,7 +203,7 @@ class TestVariableInterpolation:
         assert result == "Price: ${amount}\n"
 
     def test_variable_in_block(self, tmp_path):
-        src = "block notice:\n    Today is ${date}.\n\n@include notice\n"
+        src = "@block notice:\n    Today is ${date}.\n\n@include notice\n"
         f = make_file(tmp_path, "a.pcl", src)
         result = pcl_render(f, variables={"date": "2026-02-28"})
         assert "Today is 2026-02-28." in result
@@ -249,7 +249,7 @@ class TestConditionals:
 
     def test_conditional_in_block(self, tmp_path):
         src = (
-            "block section:\n"
+            "@block section:\n"
             "    @if show:\n"
             "        Shown\n"
             "\n"

@@ -75,7 +75,7 @@ class ParsedFile:
 # ---------------------------------------------------------------------------
 
 _IMPORT_RE = re.compile(r"^@import\s+(\S+)(?:\s+as\s+(\S+))?\s*$")
-_BLOCK_DEF_RE = re.compile(r"^block\s+(\w[\w-]*)\s*:\s*$")
+_BLOCK_DEF_RE = re.compile(r"^@block\s+(\w[\w-]*)\s*:\s*$")
 _INCLUDE_RE = re.compile(r"^@include\s+(\S+)\s*$")
 _IF_RE = re.compile(r"^@(if not|if)\s+(\w+)\s*:\s*$")
 

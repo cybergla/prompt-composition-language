@@ -1,7 +1,7 @@
 """Parser tests — written spec-first (TDD).
 
 Round 1: frontmatter, comments, text nodes, imports.
-Round 2: block definitions, @include.
+Round 2: @block definitions, @include.
 Round 3: @if / @if not, @raw / @end, escape sequences, error cases.
 """
 
@@ -93,7 +93,7 @@ class TestComments:
         assert pf.body == [TextNode("Hello # world", 1)]
 
     def test_indented_comment_stripped(self):
-        src = "block foo:\n    # comment inside block\n    Real line\n"
+        src = "@block foo:\n    # comment inside block\n    Real line\n"
         pf = parse(src)
         block = pf.body[0]
         assert isinstance(block, BlockDefNode)
@@ -174,13 +174,13 @@ class TestImports:
 
 
 # ===========================================================================
-# Round 2 — Block definitions, @include
+# Round 2 — @block definitions, @include
 # ===========================================================================
 
 
 class TestBlockDefinitions:
     def test_simple_block(self):
-        src = "block greeting:\n    Hello there.\n"
+        src = "@block greeting:\n    Hello there.\n"
         pf = parse(src)
         assert len(pf.body) == 1
         block = pf.body[0]
@@ -189,30 +189,30 @@ class TestBlockDefinitions:
         assert block.body == [TextNode("Hello there.", 2)]
 
     def test_block_multi_line_body(self):
-        src = "block intro:\n    Line one.\n    Line two.\n"
+        src = "@block intro:\n    Line one.\n    Line two.\n"
         pf = parse(src)
         block = pf.body[0]
         assert len(block.body) == 2
 
     def test_block_body_stripped_of_indent(self):
-        src = "block foo:\n    Content here\n"
+        src = "@block foo:\n    Content here\n"
         pf = parse(src)
         block = pf.body[0]
         assert block.body[0].text == "Content here"
 
     def test_nested_block_definition_raises(self):
-        src = "block outer:\n    block inner:\n        Text\n"
+        src = "@block outer:\n    @block inner:\n        Text\n"
         with pytest.raises(PCLError, match="cannot be nested"):
             parse(src)
 
     def test_two_consecutive_blocks(self):
-        src = "block a:\n    A body\n\nblock b:\n    B body\n"
+        src = "@block a:\n    A body\n\n@block b:\n    B body\n"
         pf = parse(src)
         names = [n.name for n in pf.body if isinstance(n, BlockDefNode)]
         assert names == ["a", "b"]
 
     def test_block_line_number(self):
-        src = "# comment\nblock foo:\n    body\n"
+        src = "# comment\n@block foo:\n    body\n"
         pf = parse(src)
         block = pf.body[0]
         assert block.line == 2
@@ -232,7 +232,7 @@ class TestIncludes:
         assert pf.body == [IncludeNode("persona", 1)]
 
     def test_include_inside_block(self):
-        src = "block composed:\n    @include base\n"
+        src = "@block composed:\n    @include base\n"
         pf = parse(src)
         block = pf.body[0]
         assert isinstance(block, BlockDefNode)
@@ -279,7 +279,7 @@ class TestConditionals:
         assert inner.body == [TextNode("Deep text", 3)]
 
     def test_if_inside_block(self):
-        src = "block foo:\n    @if x:\n        Conditional\n"
+        src = "@block foo:\n    @if x:\n        Conditional\n"
         pf = parse(src)
         block = pf.body[0]
         assert isinstance(block, BlockDefNode)
@@ -334,6 +334,12 @@ class TestEscaping:
         pf = parse(src)
         assert isinstance(pf.body[0], TextNode)
         assert pf.body[0].text == "@import is literal"
+
+    def test_escaped_at_block(self):
+        src = "\\@block foo: is literal\n"
+        pf = parse(src)
+        assert isinstance(pf.body[0], TextNode)
+        assert pf.body[0].text == "@block foo: is literal"
 
     def test_escaped_hash(self):
         src = "\\# not a comment\n"

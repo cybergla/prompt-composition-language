@@ -58,11 +58,11 @@
 
     "block-definition": {
       "name": "meta.block.definition.pcl",
-      "match": "^(block)\\s+(\\w[\\w-]*)\\s*(:)",
+      "match": "^(\\s*)(@block)\\s+(\\w[\\w-]*)\\s*(:)",
       "captures": {
-        "1": { "name": "keyword.control.block.pcl" },
-        "2": { "name": "entity.name.function.block.pcl" },
-        "3": { "name": "punctuation.definition.block.pcl" }
+        "2": { "name": "keyword.control.directive.pcl" },
+        "3": { "name": "entity.name.function.block.pcl" },
+        "4": { "name": "punctuation.definition.block.pcl" }
       }
     },
 
