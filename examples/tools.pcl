@@ -1,0 +1,15 @@
+---
+description: Tool description fragments
+---
+
+@block search:
+    You have access to a web search tool. Use it when the user asks about
+    current events or information you may not have.
+
+@block browse:
+    You have access to a browser tool. Use it to read specific URLs the
+    user provides.
+
+@block premium_index:
+    You have access to the premium document index, which contains
+    curated research papers and proprietary datasets.

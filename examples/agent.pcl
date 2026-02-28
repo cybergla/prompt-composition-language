@@ -1,0 +1,32 @@
+---
+version: 1.0
+description: Research assistant system prompt
+---
+
+@import ./persona.pcl
+@import ./tools.pcl as tools
+
+# Compose the agent setup from reusable fragments
+@block agent_setup:
+    @include persona.researcher
+    @include tools.search
+    @include tools.browse
+
+# Main prompt body
+@include agent_setup
+
+Today's date is ${date}.
+
+@if premium:
+    @include tools.premium_index
+
+@if not premium:
+    Upgrade to unlock the premium document index.
+
+# Pass tool call format through literally
+@raw
+When calling a tool, respond with JSON only:
+{"tool": "${tool_name}", "input": {"query": "..."}}
+@end
+
+The user's query is: ${query | no query provided}
