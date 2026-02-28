@@ -174,10 +174,16 @@ uv run pytest tests/ --cov=pcl --cov-report=term-missing
 
 ## VS Code Extension
 
-Syntax highlighting for `.pcl` files is in `vscode-extension/`. To install locally:
+Syntax highlighting lives in a separate repo: `src/pcl-vscode`. To install locally:
 
 ```bash
-cp -r vscode-extension ~/.vscode/extensions/pcl-language-0.1.0
+cp -r ../pcl-vscode ~/.vscode/extensions/pcl-language-0.1.0
+```
+
+Or symlink to pick up grammar changes without re-copying:
+
+```bash
+ln -s "$(pwd)/../pcl-vscode" ~/.vscode/extensions/pcl-language-0.1.0
 ```
 
 Then reload VS Code (`Cmd+Shift+P` → **Developer: Reload Window**).
@@ -201,8 +207,5 @@ examples/
   agent.pcl
   persona.pcl
   tools.pcl
-vscode-extension/
-  syntaxes/pcl.tmLanguage.json
-  package.json
 pyproject.toml
 ```
