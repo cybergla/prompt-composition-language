@@ -221,27 +221,4 @@ uv run pytest tests/ --cov=pcl --cov-report=term-missing
 
 ## VS Code Extension
 
-Syntax highlighting is in a separate repo: [`src/pcl-vscode`](../pcl-vscode).
-
----
-
-## Project Structure
-
-```
-src/pcl/                ← this repo
-  src/pcl/              ← Python package source
-    __init__.py         # compile, render exports
-    parser.py           # line-by-line parser → AST
-    compiler.py         # two-phase IR compiler
-    cli.py              # Typer app
-    errors.py           # PCLError with line numbers
-  tests/
-    test_parser.py
-    test_compiler.py
-    test_cli.py
-  examples/
-    agent.pcl
-    persona.pcl
-    tools.pcl
-  pyproject.toml
-```
+Syntax highlighting is in a separate repo: [`src/pcl-vscode`](https://github.com/cybergla/pcl-vscode).
