@@ -6,6 +6,7 @@ build-backend = "hatchling.build"
 name = "pcl"
 version = "0.1.0"
 requires-python = ">=3.11"
+license = {text = "MIT"}
 dependencies = [
     "pyyaml>=6.0",
     "typer>=0.12",
