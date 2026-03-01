@@ -7,7 +7,7 @@ from pathlib import Path
 
 import typer
 
-from .compiler import compile as pcl_compile, render as pcl_render
+from .compiler import Conditional, VarRef, compile as pcl_compile, render as pcl_render
 from .errors import PCLError
 
 app = typer.Typer(help="PCL — Prompt Composition Language toolchain.", add_completion=False)
@@ -45,15 +45,40 @@ def _abort_with_error(msg: str, exit_code: int = 1) -> None:
 # ---------------------------------------------------------------------------
 
 
+def _dump_segments(segments: list, indent: int = 0) -> str:
+    """Format IR segments as a human-readable tree."""
+    prefix = "  " * indent
+    parts: list[str] = []
+    for seg in segments:
+        if isinstance(seg, str):
+            if seg == "\n":
+                continue
+            parts.append(f"{prefix}TEXT  {seg!r}")
+        elif isinstance(seg, VarRef):
+            default = f" | {seg.default}" if seg.default is not None else ""
+            parts.append(f"{prefix}VAR   ${{{seg.name}{default}}}")
+        elif isinstance(seg, Conditional):
+            neg = "not " if seg.negated else ""
+            parts.append(f"{prefix}IF    {neg}{seg.variable}:")
+            parts.append(_dump_segments(seg.body, indent + 1))
+    return "\n".join(parts)
+
+
 @app.command()
 def compile(file: str = typer.Argument(..., help="Path to .pcl file")) -> None:
-    """Compile a .pcl file and print the output."""
+    """Compile a .pcl file and dump the intermediate representation."""
     path = Path(file)
     try:
-        result = pcl_render(path, variables={})
+        template = pcl_compile(path)
     except (PCLError, FileNotFoundError) as exc:
         _abort_with_error(str(exc))
-    typer.echo(result, nl=False)
+    if template.metadata:
+        typer.echo("Metadata:")
+        for key, value in template.metadata.items():
+            typer.echo(f"  {key}: {value}")
+        typer.echo()
+    typer.echo("Segments:")
+    typer.echo(_dump_segments(template.segments))
 
 
 # ---------------------------------------------------------------------------
