@@ -4,10 +4,19 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
+from typing import Optional
 
+import cbor2
 import typer
 
-from .compiler import Conditional, VarRef, compile as pcl_compile, render as pcl_render
+from .compiler import (
+    Conditional,
+    VarRef,
+    compile as pcl_compile,
+    render as pcl_render,
+    serialize as pcl_serialize,
+    deserialize as pcl_deserialize,
+)
 from .errors import PCLError
 
 app = typer.Typer(help="PCL — Prompt Composition Language toolchain.", add_completion=False)
@@ -65,13 +74,21 @@ def _dump_segments(segments: list, indent: int = 0) -> str:
 
 
 @app.command()
-def compile(file: str = typer.Argument(..., help="Path to .pcl file")) -> None:
+def compile(
+    file: str = typer.Argument(..., help="Path to .pcl file"),
+    output: Optional[str] = typer.Option(None, "-o", "--output", help="Write compiled IR to .pclc file"),
+) -> None:
     """Compile a .pcl file and dump the intermediate representation."""
     path = Path(file)
     try:
         template = pcl_compile(path)
     except (PCLError, FileNotFoundError) as exc:
         _abort_with_error(str(exc))
+    if output is not None:
+        out_path = Path(output)
+        out_path.write_bytes(cbor2.dumps(pcl_serialize(template)))
+        typer.echo(f"Compiled to {out_path}")
+        return
     if template.metadata:
         typer.echo("Metadata:")
         for key, value in template.metadata.items():
@@ -88,14 +105,24 @@ def compile(file: str = typer.Argument(..., help="Path to .pcl file")) -> None:
 
 @app.command()
 def render(
-    file: str = typer.Argument(..., help="Path to .pcl file"),
+    file: str = typer.Argument(..., help="Path to .pcl or .pclc file"),
     var: list[str] = typer.Option([], "--var", help="Variable as key=value"),
 ) -> None:
-    """Render a .pcl file with variables and print the output."""
+    """Render a .pcl or .pclc file with variables and print the output."""
     path = Path(file)
     variables = _parse_vars(var)
     try:
-        result = pcl_render(path, variables=variables)
+        if path.suffix == ".pclc":
+            try:
+                data = cbor2.loads(path.read_bytes())
+            except FileNotFoundError:
+                _abort_with_error(f"File not found: {path}")
+            except cbor2.CBORDecodeError as exc:
+                _abort_with_error(f"Invalid .pclc file: {exc}")
+            template = pcl_deserialize(data)
+            result = pcl_render(template, variables=variables)
+        else:
+            result = pcl_render(path, variables=variables)
     except (PCLError, FileNotFoundError) as exc:
         _abort_with_error(str(exc))
     typer.echo(result, nl=False)

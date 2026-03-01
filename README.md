@@ -63,12 +63,26 @@ IF    not premium:
 VAR   ${query | no query provided}
 ```
 
-### `pcl render`
-
-Render a `.pcl` file with explicit variable values.
+Use `-o`/`--output` to write the compiled IR to a binary `.pclc` file instead of printing it. This enables compile-once-render-many workflows without re-parsing source files.
 
 ```bash
+pcl compile examples/agent.pcl -o agent.pclc
+# Compiled to agent.pclc
+```
+
+### `pcl render`
+
+Render a `.pcl` or `.pclc` file with explicit variable values.
+
+```bash
+# From source
 pcl render examples/agent.pcl \
+  --var date=2026-02-28 \
+  --var query="What is alignment?" \
+  --var premium=true
+
+# From pre-compiled .pclc (no re-parsing)
+pcl render agent.pclc \
   --var date=2026-02-28 \
   --var query="What is alignment?" \
   --var premium=true
@@ -99,7 +113,8 @@ pcl watch examples/agent.pcl \
 ## Python API
 
 ```python
-from pcl import compile, render, CompiledTemplate
+from pcl import compile, render, serialize, deserialize, CompiledTemplate
+import cbor2
 
 # compile() — produces a CompiledTemplate (IR) with metadata and segments
 template = compile("examples/agent.pcl")
@@ -118,6 +133,15 @@ print(prompt)
 template = compile("examples/agent.pcl")
 for query in queries:
     prompt = render(template, variables={"date": "2026-02-28", "query": query})
+
+# serialize to .pclc — write compiled IR to disk
+with open("agent.pclc", "wb") as f:
+    f.write(cbor2.dumps(serialize(template)))
+
+# deserialize from .pclc — reconstruct IR without re-parsing source
+with open("agent.pclc", "rb") as f:
+    template = deserialize(cbor2.loads(f.read()))
+prompt = render(template, variables={"date": "2026-02-28", "query": "..."})
 ```
 
 ---
