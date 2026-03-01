@@ -1,4 +1,13 @@
-"""PCL compiler — walks the AST and produces the output string."""
+"""PCL compiler — two-phase compilation model.
+
+Phase A: compile(path) → CompiledTemplate (IR)
+    Parses files, resolves imports, expands includes, strips comments/blocks.
+    Produces a flat list of segments: str | VarRef | Conditional.
+
+Phase B: render(compiled_or_path, variables) → str
+    Walks the IR, substitutes variables, evaluates conditionals.
+    Cheap — no file I/O, can be called many times with different variable sets.
+"""
 
 from __future__ import annotations
 
@@ -9,7 +18,6 @@ from pathlib import Path
 from .errors import PCLError
 from .parser import (
     BlockDefNode,
-    FrontmatterNode,
     IfNode,
     ImportNode,
     IncludeNode,
@@ -19,26 +27,54 @@ from .parser import (
     parse_file,
 )
 
-# Matches ${var} or ${var | default value}, and \${ (escaped)
-_INTERP_RE = re.compile(r"\\?\$\{([^}]+)\}")
+# Matches ${var} or ${var | default}, and \${ (escaped)
+_INTERP_RE = re.compile(r"(\\?\$\{([^}]+)\})")
 
 
 # ---------------------------------------------------------------------------
-# Public result type
+# IR segment types
 # ---------------------------------------------------------------------------
 
 
 @dataclass
-class Template:
-    """Result of compile(). Variables are not yet resolved."""
+class VarRef:
+    """A variable placeholder to be resolved at render time."""
 
-    metadata: dict
-    _ast: ParsedFile
-    _path: Path
+    name: str
+    default: str | None
+    line: int
+
+
+@dataclass
+class Conditional:
+    """A conditional branch to be evaluated at render time."""
+
+    variable: str
+    negated: bool
+    body: list  # list[str | VarRef | Conditional]
+    line: int
+
+
+# Segment = str | VarRef | Conditional
+Segment = str | VarRef | Conditional
 
 
 # ---------------------------------------------------------------------------
-# Namespace entry: everything needed to render an imported file
+# CompiledTemplate — the result of compile()
+# ---------------------------------------------------------------------------
+
+
+@dataclass
+class CompiledTemplate:
+    """Result of compile(). All structural resolution is done; only variable
+    substitution and conditional evaluation remain."""
+
+    metadata: dict
+    segments: list[Segment]
+
+
+# ---------------------------------------------------------------------------
+# Namespace entry (internal)
 # ---------------------------------------------------------------------------
 
 
@@ -50,17 +86,16 @@ class _Namespace:
 
 
 # ---------------------------------------------------------------------------
-# Compiler
+# Compiler — Phase A: AST → IR
 # ---------------------------------------------------------------------------
 
 
 class _Compiler:
     def __init__(self) -> None:
-        # resolved path → ParsedFile, shared across the whole compile run
         self._file_cache: dict[str, ParsedFile] = {}
 
     # ------------------------------------------------------------------
-    # File loading (parse + cache; circular import detection at load time)
+    # File loading + circular import detection
     # ------------------------------------------------------------------
 
     def load(self, path: Path, load_stack: frozenset[str] = frozenset()) -> ParsedFile:
@@ -74,7 +109,6 @@ class _Compiler:
         except FileNotFoundError:
             raise PCLError(f"File not found: {path}")
         self._file_cache[key] = pf
-        # Eagerly load all transitive imports to detect circles early
         new_stack = load_stack | {key}
         for imp in pf.imports:
             imp_path = (path.parent / imp.path).resolve()
@@ -82,7 +116,7 @@ class _Compiler:
         return pf
 
     # ------------------------------------------------------------------
-    # Build namespace map for a file
+    # Namespace + block helpers
     # ------------------------------------------------------------------
 
     def _build_ns_map(self, pf: ParsedFile, base_dir: Path) -> dict[str, _Namespace]:
@@ -97,94 +131,127 @@ class _Compiler:
             )
         return ns_map
 
-    # ------------------------------------------------------------------
-    # Block registry
-    # ------------------------------------------------------------------
-
     def _collect_blocks(self, nodes: list) -> dict[str, BlockDefNode]:
         return {n.name: n for n in nodes if isinstance(n, BlockDefNode)}
 
     # ------------------------------------------------------------------
-    # Entry point
+    # AST → IR (flatten everything except variables and conditionals)
     # ------------------------------------------------------------------
 
-    def render(self, pf: ParsedFile, variables: dict, base_dir: Path) -> str:
+    def compile_to_ir(self, pf: ParsedFile, base_dir: Path) -> list[Segment]:
         ns_map = self._build_ns_map(pf, base_dir)
         local_blocks = self._collect_blocks(pf.body)
-        lines = self._render_nodes(
-            pf.body, variables, local_blocks, ns_map, base_dir, frozenset()
+        return self._flatten_nodes(
+            pf.body, local_blocks, ns_map, base_dir, frozenset()
         )
-        return "\n".join(lines) + ("\n" if lines else "")
 
-    # ------------------------------------------------------------------
-    # Node rendering
-    # ------------------------------------------------------------------
-
-    def _render_nodes(
+    def _flatten_nodes(
         self,
         nodes: list,
-        variables: dict,
         local_blocks: dict[str, BlockDefNode],
         ns_map: dict[str, _Namespace],
         base_dir: Path,
         include_stack: frozenset[str],
-    ) -> list[str]:
-        out: list[str] = []
+    ) -> list[Segment]:
+        out: list[Segment] = []
         for node in nodes:
             out.extend(
-                self._render_node(
-                    node, variables, local_blocks, ns_map, base_dir, include_stack
-                )
+                self._flatten_node(node, local_blocks, ns_map, base_dir, include_stack)
             )
         return out
 
-    def _render_node(
+    def _flatten_node(
         self,
         node,
-        variables: dict,
         local_blocks: dict[str, BlockDefNode],
         ns_map: dict[str, _Namespace],
         base_dir: Path,
         include_stack: frozenset[str],
-    ) -> list[str]:
+    ) -> list[Segment]:
         if isinstance(node, BlockDefNode):
             return []
 
         if isinstance(node, TextNode):
-            return [self._interpolate(node.text, variables, node.line)]
+            segs = self._text_to_segments(node.text, node.line)
+            segs.append("\n")
+            return segs
 
         if isinstance(node, RawNode):
-            return node.lines
+            return ["\n".join(node.lines)]
 
         if isinstance(node, IncludeNode):
-            return self._render_include(
-                node, variables, local_blocks, ns_map, base_dir, include_stack
+            return self._flatten_include(
+                node, local_blocks, ns_map, base_dir, include_stack
             )
 
         if isinstance(node, IfNode):
-            return self._render_if(
-                node, variables, local_blocks, ns_map, base_dir, include_stack
+            body_segments = self._flatten_nodes(
+                node.body, local_blocks, ns_map, base_dir, include_stack
             )
+            return [
+                Conditional(
+                    variable=node.variable,
+                    negated=node.negated,
+                    body=body_segments,
+                    line=node.line,
+                )
+            ]
 
         return []  # pragma: no cover
 
     # ------------------------------------------------------------------
-    # @include
+    # Text → segments (split on variable references)
     # ------------------------------------------------------------------
 
-    def _render_include(
+    def _text_to_segments(self, text: str, lineno: int) -> list[Segment]:
+        segments: list[Segment] = []
+        last_end = 0
+
+        for m in _INTERP_RE.finditer(text):
+            full = m.group(1)
+            start = m.start(1)
+
+            # Literal text before this match
+            if start > last_end:
+                segments.append(text[last_end:start])
+
+            if full.startswith("\\"):
+                # \${ → literal ${...}
+                segments.append("${" + m.group(2) + "}")
+            else:
+                inner = m.group(2)
+                if "|" in inner:
+                    var_name, default = inner.split("|", 1)
+                    var_name = var_name.strip()
+                    default = default.strip()
+                else:
+                    var_name = inner.strip()
+                    default = None
+                segments.append(VarRef(name=var_name, default=default, line=lineno))
+
+            last_end = m.end(1)
+
+        # Trailing text
+        if last_end < len(text):
+            segments.append(text[last_end:])
+
+        return segments
+
+    # ------------------------------------------------------------------
+    # @include → IR
+    # ------------------------------------------------------------------
+
+    def _flatten_include(
         self,
         node: IncludeNode,
-        variables: dict,
         local_blocks: dict[str, BlockDefNode],
         ns_map: dict[str, _Namespace],
         base_dir: Path,
         include_stack: frozenset[str],
-    ) -> list[str]:
+    ) -> list[Segment]:
         ref = node.ref
 
         if "." in ref:
-            # @include namespace.blockname
             ns_name, block_name = ref.split(".", 1)
             if ns_name not in ns_map:
                 raise PCLError(f"Unknown namespace {ns_name!r}", line=node.line)
@@ -199,99 +266,62 @@ class _Compiler:
                 raise PCLError(f"Circular include: {key!r}", line=node.line)
             block = ns.blocks[block_name]
             ns_ns_map = self._build_ns_map(ns.pf, ns.base_dir)
-            return self._render_nodes(
-                block.body,
-                variables,
-                ns.blocks,
-                ns_ns_map,
-                ns.base_dir,
+            return self._flatten_nodes(
+                block.body, ns.blocks, ns_ns_map, ns.base_dir,
                 include_stack | {key},
             )
 
         if ref in local_blocks:
-            # @include blockname (same file)
             if ref in include_stack:
                 raise PCLError(f"Circular include: {ref!r}", line=node.line)
             block = local_blocks[ref]
-            return self._render_nodes(
-                block.body,
-                variables,
-                local_blocks,
-                ns_map,
-                base_dir,
+            return self._flatten_nodes(
+                block.body, local_blocks, ns_map, base_dir,
                 include_stack | {ref},
             )
 
         if ref in ns_map:
-            # @include namespace (entire imported file body)
             ns = ns_map[ref]
             ns_ns_map = self._build_ns_map(ns.pf, ns.base_dir)
             ns_local_blocks = self._collect_blocks(ns.pf.body)
-            # Use file key for render-level circular detection
             file_key = f"__file__{str(ns.base_dir)}"
             if file_key in include_stack:
                 raise PCLError(f"Circular import: {ref!r}", line=node.line)
-            return self._render_nodes(
-                ns.pf.body,
-                variables,
-                ns_local_blocks,
-                ns_ns_map,
-                ns.base_dir,
+            return self._flatten_nodes(
+                ns.pf.body, ns_local_blocks, ns_ns_map, ns.base_dir,
                 include_stack | {file_key},
             )
 
         raise PCLError(f"Unknown block or namespace {ref!r}", line=node.line)
 
-    # ------------------------------------------------------------------
-    # @if / @if not
-    # ------------------------------------------------------------------
 
-    def _render_if(
-        self,
-        node: IfNode,
-        variables: dict,
-        local_blocks: dict[str, BlockDefNode],
-        ns_map: dict[str, _Namespace],
-        base_dir: Path,
-        include_stack: frozenset[str],
-    ) -> list[str]:
-        value = bool(variables.get(node.variable, False))
-        active = (not value) if node.negated else value
-        if not active:
-            return []
-        return self._render_nodes(
-            node.body, variables, local_blocks, ns_map, base_dir, include_stack
-        )
+# ---------------------------------------------------------------------------
+# Phase B: IR → string (render)
+# ---------------------------------------------------------------------------
 
-    # ------------------------------------------------------------------
-    # Variable interpolation
-    # ------------------------------------------------------------------
 
-    def _interpolate(self, text: str, variables: dict, lineno: int) -> str:
-        def replace(m: re.Match) -> str:
-            full = m.group(0)
-            if full.startswith("\\"):
-                # \${ → emit literal ${...}
-                return "${" + m.group(1) + "}"
-            inner = m.group(1)
-            if "|" in inner:
-                var_name, default = inner.split("|", 1)
-                var_name = var_name.strip()
-                default = default.strip()
+def _render_segments(segments: list[Segment], variables: dict) -> list[str]:
+    """Walk IR segments and produce output lines."""
+    parts: list[str] = []
+    for seg in segments:
+        if isinstance(seg, str):
+            parts.append(seg)
+        elif isinstance(seg, VarRef):
+            if seg.name in variables:
+                parts.append(str(variables[seg.name]))
+            elif seg.default is not None:
+                parts.append(seg.default)
             else:
-                var_name = inner.strip()
-                default = None
-
-            if var_name in variables:
-                return str(variables[var_name])
-            if default is not None:
-                return default
-            raise PCLError(
-                f"Undefined variable {var_name!r} with no default",
-                line=lineno,
-            )
-
-        return _INTERP_RE.sub(replace, text)
+                raise PCLError(
+                    f"Undefined variable {seg.name!r} with no default",
+                    line=seg.line,
+                )
+        elif isinstance(seg, Conditional):
+            value = bool(variables.get(seg.variable, False))
+            active = (not value) if seg.negated else value
+            if active:
+                parts.extend(_render_segments(seg.body, variables))
+    return parts
 
 
 # ---------------------------------------------------------------------------
@@ -299,18 +329,38 @@ class _Compiler:
 # ---------------------------------------------------------------------------
 
 
-def compile(path: str | Path, *, variables: dict | None = None) -> Template:
-    """Parse and compile a .pcl file. Variables remain unresolved."""
+def compile(path: str | Path) -> CompiledTemplate:
+    """Parse and compile a .pcl file into an IR. No variables needed.
+
+    Returns a CompiledTemplate with .metadata and .segments.
+    Call render() on it with variables to get the final string.
+    """
     p = Path(path).resolve()
     compiler = _Compiler()
     pf = compiler.load(p)
     metadata = pf.frontmatter.data if pf.frontmatter else {}
-    return Template(metadata=metadata, _ast=pf, _path=p)
+    segments = compiler.compile_to_ir(pf, base_dir=p.parent)
+    return CompiledTemplate(metadata=metadata, segments=segments)
 
 
-def render(path: str | Path, *, variables: dict | None = None) -> str:
-    """Compile and render a .pcl file with the given variables."""
-    p = Path(path).resolve()
-    compiler = _Compiler()
-    pf = compiler.load(p)
-    return compiler.render(pf, variables or {}, base_dir=p.parent)
+def render(
+    source: str | Path | CompiledTemplate,
+    *,
+    variables: dict | None = None,
+) -> str:
+    """Render a .pcl file or CompiledTemplate to a string.
+
+    Accepts either a file path (compiles internally) or a pre-compiled template.
+    """
+    if isinstance(source, CompiledTemplate):
+        template = source
+    else:
+        template = compile(source)
+
+    parts = _render_segments(template.segments, variables or {})
+    text = "".join(parts)
+
+    # Ensure trailing newline for non-empty output
+    if text and not text.endswith("\n"):
+        text += "\n"
+    return text

@@ -1,18 +1,26 @@
-"""Compiler tests — written spec-first (TDD).
+"""Compiler tests — two-phase compilation model.
 
-Round 1: basic text passthrough, comment/block-def stripping.
+Round 1: basic text passthrough, metadata, comment/block stripping.
 Round 2: block definitions + @include (same file).
 Round 3: cross-file @import + @include namespace.
 Round 4: variable interpolation and defaults.
 Round 5: @if / @if not conditionals.
 Round 6: @raw passthrough.
-Round 7: error cases (circular include, circular import, undefined var).
+Round 7: error cases.
+Round 8: IR structure (compile produces correct segment types).
+Round 9: compile-once, render-many (reuse CompiledTemplate).
 """
 
 import pytest
 from pathlib import Path
 
-from pcl.compiler import compile as pcl_compile, render as pcl_render, Template
+from pcl.compiler import (
+    compile as pcl_compile,
+    render as pcl_render,
+    CompiledTemplate,
+    VarRef,
+    Conditional,
+)
 from pcl.errors import PCLError
 
 
@@ -65,10 +73,10 @@ class TestBasicOutput:
         assert result == "Hello\n"
         assert "---" not in result
 
-    def test_compile_returns_template(self, tmp_path):
+    def test_compile_returns_compiled_template(self, tmp_path):
         f = make_file(tmp_path, "a.pcl", "---\nversion: 2\n---\nHi\n")
         t = pcl_compile(f)
-        assert isinstance(t, Template)
+        assert isinstance(t, CompiledTemplate)
 
     def test_metadata_from_frontmatter(self, tmp_path):
         f = make_file(tmp_path, "a.pcl", "---\nversion: 1.2\ndescription: test\n---\n")
@@ -98,7 +106,6 @@ class TestBlocksAndIncludes:
         src = "@block greeting:\n    Hello there.\n\n@include greeting\n"
         f = make_file(tmp_path, "a.pcl", src)
         result = pcl_render(f)
-        # only one occurrence from the include, not two
         assert result.count("Hello there.") == 1
 
     def test_include_respects_position(self, tmp_path):
@@ -121,13 +128,13 @@ class TestBlocksAndIncludes:
     def test_include_unknown_block_raises(self, tmp_path):
         f = make_file(tmp_path, "a.pcl", "@include nonexistent\n")
         with pytest.raises(PCLError, match="nonexistent"):
-            pcl_render(f)
+            pcl_compile(f)
 
     def test_circular_include_raises(self, tmp_path):
         src = "@block a:\n    @include a\n\n@include a\n"
         f = make_file(tmp_path, "a.pcl", src)
         with pytest.raises(PCLError, match="[Cc]ircular"):
-            pcl_render(f)
+            pcl_compile(f)
 
 
 # ===========================================================================
@@ -275,7 +282,6 @@ class TestRawBlocks:
     def test_raw_not_interpolated(self, tmp_path):
         src = "@raw\n${undefined_var}\n@end\n"
         f = make_file(tmp_path, "a.pcl", src)
-        # should NOT raise even though variable is undefined
         result = pcl_render(f, variables={})
         assert "${undefined_var}" in result
 
@@ -284,3 +290,97 @@ class TestRawBlocks:
         f = make_file(tmp_path, "a.pcl", src)
         result = pcl_render(f, variables={})
         assert "# this is not stripped" in result
+
+
+# ===========================================================================
+# Round 8 — IR structure (compile produces correct segment types)
+# ===========================================================================
+
+
+class TestIRStructure:
+    def test_plain_text_produces_str_segments(self, tmp_path):
+        f = make_file(tmp_path, "a.pcl", "Hello world\n")
+        t = pcl_compile(f)
+        assert all(isinstance(s, str) for s in t.segments)
+
+    def test_variable_produces_varref_segment(self, tmp_path):
+        f = make_file(tmp_path, "a.pcl", "Hello ${name}\n")
+        t = pcl_compile(f)
+        varrefs = [s for s in t.segments if isinstance(s, VarRef)]
+        assert len(varrefs) == 1
+        assert varrefs[0].name == "name"
+        assert varrefs[0].default is None
+
+    def test_variable_with_default_in_varref(self, tmp_path):
+        f = make_file(tmp_path, "a.pcl", "${name | world}\n")
+        t = pcl_compile(f)
+        varrefs = [s for s in t.segments if isinstance(s, VarRef)]
+        assert varrefs[0].name == "name"
+        assert varrefs[0].default == "world"
+
+    def test_conditional_produces_conditional_segment(self, tmp_path):
+        f = make_file(tmp_path, "a.pcl", "@if flag:\n    Content\n")
+        t = pcl_compile(f)
+        conds = [s for s in t.segments if isinstance(s, Conditional)]
+        assert len(conds) == 1
+        assert conds[0].variable == "flag"
+        assert conds[0].negated is False
+
+    def test_conditional_not_produces_negated(self, tmp_path):
+        f = make_file(tmp_path, "a.pcl", "@if not flag:\n    Content\n")
+        t = pcl_compile(f)
+        conds = [s for s in t.segments if isinstance(s, Conditional)]
+        assert conds[0].negated is True
+
+    def test_include_expanded_in_ir(self, tmp_path):
+        src = "@block greeting:\n    Hello\n\n@include greeting\n"
+        f = make_file(tmp_path, "a.pcl", src)
+        t = pcl_compile(f)
+        # IR should contain the expanded "Hello" text, not an include reference
+        text_segments = [s for s in t.segments if isinstance(s, str)]
+        assert any("Hello" in s for s in text_segments)
+
+    def test_raw_block_produces_str_segment(self, tmp_path):
+        src = "@raw\n${literal}\n@end\n"
+        f = make_file(tmp_path, "a.pcl", src)
+        t = pcl_compile(f)
+        text_segments = [s for s in t.segments if isinstance(s, str)]
+        assert any("${literal}" in s for s in text_segments)
+        # Should NOT produce VarRef for raw content
+        varrefs = [s for s in t.segments if isinstance(s, VarRef)]
+        assert len(varrefs) == 0
+
+    def test_escaped_dollar_produces_str_not_varref(self, tmp_path):
+        f = make_file(tmp_path, "a.pcl", "\\${amount}\n")
+        t = pcl_compile(f)
+        varrefs = [s for s in t.segments if isinstance(s, VarRef)]
+        assert len(varrefs) == 0
+        text = "".join(s for s in t.segments if isinstance(s, str))
+        assert "${amount}" in text
+
+
+# ===========================================================================
+# Round 9 — Compile-once, render-many
+# ===========================================================================
+
+
+class TestCompileOnceRenderMany:
+    def test_same_template_different_variables(self, tmp_path):
+        f = make_file(tmp_path, "a.pcl", "Hello ${name}\n")
+        t = pcl_compile(f)
+        assert pcl_render(t, variables={"name": "Alice"}) == "Hello Alice\n"
+        assert pcl_render(t, variables={"name": "Bob"}) == "Hello Bob\n"
+
+    def test_conditional_renders_differently(self, tmp_path):
+        f = make_file(tmp_path, "a.pcl", "@if premium:\n    Premium\n")
+        t = pcl_compile(f)
+        assert "Premium" in pcl_render(t, variables={"premium": True})
+        assert "Premium" not in pcl_render(t, variables={"premium": False})
+
+    def test_render_path_same_as_compile_then_render(self, tmp_path):
+        f = make_file(tmp_path, "a.pcl", "Hello ${name}\n")
+        vars = {"name": "Alice"}
+        direct = pcl_render(f, variables=vars)
+        compiled = pcl_compile(f)
+        via_template = pcl_render(compiled, variables=vars)
+        assert direct == via_template
