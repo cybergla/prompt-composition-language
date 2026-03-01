@@ -8,6 +8,7 @@ __pycache__/
 # uv / virtualenv
 .venv/
 .python-version
+uv.lock
 
 # Build / dist
 *.egg-info/
