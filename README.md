@@ -40,10 +40,27 @@ pcl --help
 
 ### `pcl compile`
 
-Parse and compile a `.pcl` file, printing the output. Variables with defaults resolve to their defaults; variables with no default cause an error.
+Compile a `.pcl` file and dump its intermediate representation — a tree of `TEXT`, `VAR`, and `IF` segments. Useful for inspecting template structure before rendering.
 
 ```bash
 pcl compile examples/agent.pcl
+```
+
+Example output:
+
+```
+Metadata:
+  version: 1.0
+  description: Research assistant system prompt
+
+Segments:
+TEXT  'You are an expert research assistant...'
+VAR   ${date}
+IF    premium:
+  TEXT  'You have access to the premium document index.'
+IF    not premium:
+  TEXT  'Upgrade to unlock the premium document index.'
+VAR   ${query | no query provided}
 ```
 
 ### `pcl render`
@@ -82,19 +99,25 @@ pcl watch examples/agent.pcl \
 ## Python API
 
 ```python
-from pcl import compile, render
+from pcl import compile, render, CompiledTemplate
 
-# compile() — parse and resolve imports; variables remain unresolved
+# compile() — produces a CompiledTemplate (IR) with metadata and segments
 template = compile("examples/agent.pcl")
-print(template.metadata)   # {"version": 1.0, "description": "..."}
+print(template.metadata)    # {"version": 1.0, "description": "..."}
+print(template.segments)    # [str, VarRef, Conditional, ...]
 
-# render() — fully resolved output string
+# render() — resolves variables and conditionals, returns final string
 prompt = render("examples/agent.pcl", variables={
     "date": "2026-02-28",
     "query": "What is alignment?",
     "premium": True,
 })
 print(prompt)
+
+# compile once, render many — avoids re-parsing for each variable set
+template = compile("examples/agent.pcl")
+for query in queries:
+    prompt = render(template, variables={"date": "2026-02-28", "query": query})
 ```
 
 ---
@@ -185,7 +208,7 @@ src/pcl/                ← this repo
   src/pcl/              ← Python package source
     __init__.py         # compile, render exports
     parser.py           # line-by-line parser → AST
-    compiler.py         # AST walker → string + metadata
+    compiler.py         # two-phase IR compiler
     cli.py              # Typer app
     errors.py           # PCLError with line numbers
   tests/
