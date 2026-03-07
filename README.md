@@ -2,6 +2,18 @@
 
 PCL is a small DSL for authoring, composing, and managing LLM prompts as modular, version-controlled artifacts. A `.pcl` file compiles to a plain text string ready to use as a system prompt with any LLM API.
 
+# Why PCL?
+
+I came up with PCL as a way to manage prompts when they get too large and unwieldy. Most agentic applications today involve persisting prompts as a bunch of text/markdown files across disparate locations which are then read at runtime before using them for an LLM inference request. Parts of the prompt are often static (rules, persona, tools) while some can be more dynamic (user messages, context). Managing multiple sets of prompt .md files, with different versions, becomes a real engineering challenge. Template engines like Jinja alleviate this problem somewhat but I wanted something that went beyond simple variable substitution and was specifically tailored for LLM applications.
+
+With PCL you get in-built support for templating, composition, compile time checks etc. Think of prompts that same way as you do code. You define your prompts as a modular set of text files (`.pcl` files), then have the compiler compile and weave the prompts together into a single IR template, which can be rendered at runtime with variable substitution. 
+
+pcl files are just like any other source- version controlled, with a well defined syntax.
+
+### Author
+
+Tanay Deshmukh (& vibe-coded with Claude)
+
 ---
 
 ## Features
@@ -18,7 +30,7 @@ PCL is a small DSL for authoring, composing, and managing LLM prompts as modular
 
 ## Installation
 
-Requires Python 3.11+. Uses [uv](https://github.com/astral-sh/uv) for environment management.
+Requires Python 3.11+. Recommend using [uv](https://github.com/astral-sh/uv) for environment management.
 
 ```bash
 git clone <repo>
