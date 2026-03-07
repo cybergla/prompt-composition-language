@@ -3,8 +3,13 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "pcl"
+name = "pcl-lang"
 version = "0.1.0"
+description = "A DSL for authoring, composing, and managing LLM prompts as modular, version-controlled artifacts"
+readme = "README.md"
+authors = [
+    {name = "Tanay Deshmukh"}
+]
 requires-python = ">=3.11"
 license = {text = "MIT"}
 dependencies = [
@@ -13,6 +18,10 @@ dependencies = [
     "watchdog>=4.0",
     "cbor2>=5.0",
 ]
+
+[project.urls]
+Homepage = "https://github.com/cybergla/prompt-composition-language"
+Repository = "https://github.com/cybergla/prompt-composition-language"
 
 [project.optional-dependencies]
 dev = ["pytest>=8.0", "pytest-cov>=5.0"]
