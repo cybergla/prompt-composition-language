@@ -9,7 +9,8 @@ from pathlib import Path
 from typer.testing import CliRunner
 
 from pcl.cli import app
-from pcl.compiler import serialize as pcl_serialize, compile as pcl_compile
+from pcl.serde import serialize as pcl_serialize
+from pcl.compiler import compile as pcl_compile
 
 runner = CliRunner()
 

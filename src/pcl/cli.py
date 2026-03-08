@@ -15,9 +15,11 @@ from .datamodel import (
 )
 from .compiler import (
     compile as pcl_compile,
-    render as pcl_render,
+    render as pcl_render
+)
+from .serde import (
     serialize as pcl_serialize,
-    deserialize as pcl_deserialize,
+    deserialize as pcl_deserialize
 )
 from .errors import PCLError
 
