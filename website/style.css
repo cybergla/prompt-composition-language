@@ -1,0 +1,803 @@
+/* ================================================================
+   PCL Website — Custom Styles
+   ================================================================ */
+
+/* ----------- Base ----------- */
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: #0f172a;
+  color: #e2e8f0;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+
+code, pre, .font-mono-custom {
+  font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+}
+
+/* ----------- Dot-grid Hero Background ----------- */
+
+.dot-grid {
+  background-image: radial-gradient(circle, rgba(129, 140, 248, 0.12) 1px, transparent 1px);
+  background-size: 28px 28px;
+  pointer-events: none;
+}
+
+/* ----------- Navigation ----------- */
+
+#nav {
+  transition: background-color 0.25s ease, border-bottom-color 0.25s ease;
+  border-bottom: 1px solid transparent;
+}
+
+#nav.scrolled {
+  background-color: rgba(15, 23, 42, 0.97);
+  border-bottom-color: #1e293b;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* ----------- Install Snippet ----------- */
+
+.install-snippet {
+  display: inline-flex;
+  align-items: center;
+  background-color: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 10px 10px 10px 16px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+  color: #e2e8f0;
+  transition: border-color 0.2s;
+}
+
+.install-snippet:hover {
+  border-color: #475569;
+}
+
+.install-snippet code {
+  flex: 1;
+}
+
+.copy-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #475569;
+  padding: 6px 10px;
+  border-radius: 6px;
+  transition: color 0.15s, background-color 0.15s;
+  position: relative;
+}
+
+.copy-btn:hover {
+  color: #00D9A3;
+  background-color: rgba(0, 217, 163, 0.1);
+}
+
+.copy-tooltip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  right: 0;
+  background: #334155;
+  color: #e2e8f0;
+  font-size: 11px;
+  font-family: system-ui, sans-serif;
+  padding: 4px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s;
+}
+
+.copy-tooltip.show {
+  opacity: 1;
+}
+
+/* ----------- Section Labels ----------- */
+
+.section-label {
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #00D9A3;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+/* ----------- Button Styles ----------- */
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #00D9A3;
+  color: #0e0e0f;
+  font-weight: 600;
+  font-size: 0.9rem;
+  padding: 12px 24px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.1s;
+  text-decoration: none;
+  line-height: 1;
+}
+
+.btn-primary:hover:not([disabled]) {
+  background: #2eefc3;
+}
+
+.btn-primary:active:not([disabled]) {
+  transform: scale(0.98);
+}
+
+.btn-primary[disabled] {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  color: #e2e8f0;
+  font-weight: 500;
+  font-size: 0.9rem;
+  padding: 12px 24px;
+  border-radius: 8px;
+  border: 1px solid #334155;
+  cursor: pointer;
+  transition: border-color 0.2s, background-color 0.2s;
+  text-decoration: none;
+  line-height: 1;
+}
+
+.btn-secondary:hover {
+  border-color: #64748b;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+/* ----------- Problem Section — Comparison Table ----------- */
+
+.comparison-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.comparison-table th {
+  padding: 12px 16px;
+  text-align: left;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #64748b;
+  border-bottom: 1px solid #1e293b;
+  font-weight: 600;
+}
+
+.comparison-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid #1e293b;
+  vertical-align: top;
+  line-height: 1.6;
+}
+
+.comparison-table td:first-child {
+  color: #64748b;
+}
+
+.comparison-table td:last-child {
+  color: #94a3b8;
+}
+
+.comparison-table tr:last-child td {
+  border-bottom: none;
+}
+
+/* ----------- Feature Tiles ----------- */
+
+.feature-tile {
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid #1e293b;
+  border-radius: 12px;
+  padding: 24px;
+  transition: border-color 0.2s, transform 0.2s;
+}
+
+.feature-tile:hover {
+  border-color: rgba(129, 140, 248, 0.4);
+  transform: translateY(-2px);
+}
+
+.feature-icon {
+  width: 40px;
+  height: 40px;
+  background: rgba(129, 140, 248, 0.1);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+  color: #818cf8;
+  flex-shrink: 0;
+}
+
+.feature-tile h3 {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #e2e8f0;
+  margin-bottom: 8px;
+}
+
+.feature-tile p {
+  font-size: 0.875rem;
+  color: #64748b;
+  line-height: 1.65;
+}
+
+.feature-tile code {
+  font-size: 0.82rem;
+  color: #c084fc;
+  background: rgba(192, 132, 252, 0.1);
+  padding: 1px 5px;
+  border-radius: 3px;
+}
+
+/* ----------- Annotated Example ----------- */
+
+.pcl-code {
+  background: #080e17;
+  border: 1px solid #1e293b;
+  border-radius: 8px;
+  padding: 20px 24px;
+  overflow-x: auto;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  line-height: 1.75;
+  tab-size: 4;
+  margin: 0;
+}
+
+.code-line {
+  display: block;
+  white-space: pre;
+}
+
+/* PCL Syntax Token Colors */
+.pcl-frontmatter-delim { color: #6366f1; }
+.pcl-fm-key            { color: #38bdf8; }
+.pcl-comment           { color: #475569; font-style: italic; }
+.pcl-keyword           { color: #c084fc; }
+.pcl-block-name        { color: #fbbf24; }
+.pcl-path              { color: #34d399; }
+.pcl-interp-delim      { color: #6366f1; }
+.pcl-var               { color: #f472b6; }
+.pcl-default           { color: #34d399; }
+.pcl-raw-content       { color: #94a3b8; }
+.pcl-plain             { color: #e2e8f0; }
+
+/* Annotation badges inline in code */
+.anno-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  background-color: #00D9A3;
+  color: #0e0e0f;
+  font-size: 9.5px;
+  font-weight: 700;
+  font-family: system-ui, sans-serif;
+  margin-left: 10px;
+  vertical-align: middle;
+  flex-shrink: 0;
+  position: relative;
+  top: -1px;
+}
+
+/* Annotation list */
+.anno-list {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.anno-item {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.anno-item .anno-num {
+  flex-shrink: 0;
+  margin-left: 0;
+  width: 22px;
+  height: 22px;
+  font-size: 11px;
+  margin-top: 1px;
+}
+
+.anno-item strong {
+  display: block;
+  font-size: 0.85rem;
+  color: #e2e8f0;
+  margin-bottom: 3px;
+}
+
+.anno-item p {
+  font-size: 0.82rem;
+  color: #64748b;
+  line-height: 1.65;
+  margin: 0;
+}
+
+.anno-item code {
+  font-size: 0.78rem;
+  color: #c084fc;
+  background: rgba(192, 132, 252, 0.1);
+  padding: 1px 5px;
+  border-radius: 3px;
+}
+
+/* ----------- Playground Teaser ----------- */
+
+.playground-mock {
+  background: #080e17;
+  border: 1px solid #1e293b;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.playground-mock-toolbar {
+  background: #0f172a;
+  border-bottom: 1px solid #1e293b;
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.mock-dot {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+}
+
+.playground-mock-body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 180px;
+}
+
+.playground-mock-panel {
+  padding: 16px 20px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12.5px;
+  line-height: 1.7;
+  color: #334155;
+}
+
+.playground-mock-panel + .playground-mock-panel {
+  border-left: 1px solid #1e293b;
+  color: #475569;
+}
+
+/* ----------- Install / Getting Started ----------- */
+
+.code-block {
+  background: #080e17;
+  border: 1px solid #1e293b;
+  border-radius: 8px;
+  padding: 16px 20px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  line-height: 1.85;
+  overflow-x: auto;
+}
+
+.code-block .prompt {
+  color: #334155;
+  user-select: none;
+}
+
+.code-block .cmd {
+  color: #e2e8f0;
+}
+
+.code-block .flag {
+  color: #34d399;
+}
+
+.code-block .arg {
+  color: #f472b6;
+}
+
+.code-block .comment {
+  color: #475569;
+}
+
+/* ----------- Footer ----------- */
+
+footer {
+  border-top: 1px solid #1e293b;
+}
+
+/* ----------- Responsive ----------- */
+
+@media (max-width: 1024px) {
+  .example-layout {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 640px) {
+  .playground-mock-body {
+    grid-template-columns: 1fr;
+  }
+
+  .playground-mock-panel + .playground-mock-panel {
+    border-left: none;
+    border-top: 1px solid #1e293b;
+  }
+}
+
+/* ================================================================
+   HERO ENHANCEMENTS — gradient orbs, demo panel, animations
+   ================================================================ */
+
+/* ----------- Gradient text ----------- */
+
+.gradient-text {
+  background: linear-gradient(135deg, #00D9A3 0%, #4DB8FF 45%, #A78BFA 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Hero headline font */
+.hero-headline {
+  font-family: 'Syne', system-ui, sans-serif;
+}
+
+/* ----------- Ambient gradient orbs ----------- */
+
+.orb {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  animation: orb-float 14s ease-in-out infinite alternate;
+}
+
+.orb-1 {
+  width: 650px;
+  height: 650px;
+  background: radial-gradient(circle, rgba(0, 217, 163, 0.2) 0%, transparent 65%);
+  top: -220px;
+  right: -100px;
+  animation-duration: 16s;
+}
+
+.orb-2 {
+  width: 420px;
+  height: 420px;
+  background: radial-gradient(circle, rgba(167, 139, 250, 0.22) 0%, transparent 65%);
+  bottom: -80px;
+  left: 3%;
+  animation-duration: 11s;
+  animation-direction: alternate-reverse;
+}
+
+.orb-3 {
+  width: 320px;
+  height: 320px;
+  background: radial-gradient(circle, rgba(255, 107, 107, 0.15) 0%, transparent 65%);
+  top: 40%;
+  left: 28%;
+  animation-duration: 18s;
+  animation-delay: -4s;
+}
+
+@keyframes orb-float {
+  0%   { transform: translateY(0px) scale(1); }
+  100% { transform: translateY(-50px) scale(1.08); }
+}
+
+/* ----------- Entrance animations ----------- */
+
+.fade-up {
+  opacity: 0;
+  transform: translateY(24px);
+  animation: fade-up 0.65s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.fade-up-delay-1 { animation-delay: 0.05s; }
+.fade-up-delay-2 { animation-delay: 0.15s; }
+.fade-up-delay-3 { animation-delay: 0.28s; }
+.fade-up-delay-4 { animation-delay: 0.42s; }
+.fade-up-delay-5 { animation-delay: 0.58s; }
+
+@keyframes fade-up {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.demo-entrance {
+  opacity: 0;
+  transform: translateX(28px) scale(0.97);
+  animation: demo-entrance 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.35s forwards;
+}
+
+@keyframes demo-entrance {
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+/* ----------- Demo panel ----------- */
+
+.demo-panel {
+  background: #080e17;
+  border: 1px solid #1e293b;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow:
+    0 0 0 1px rgba(129, 140, 248, 0.06),
+    0 30px 90px rgba(0, 0, 0, 0.7),
+    0 0 120px rgba(0, 217, 163, 0.07);
+  animation: demo-float 7s ease-in-out infinite;
+}
+
+@keyframes demo-float {
+  0%, 100% { transform: translateY(0px);   }
+  50%       { transform: translateY(-10px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .demo-panel { animation: none; }
+  .orb        { animation: none; }
+  .fade-up,
+  .demo-entrance { animation: none; opacity: 1; transform: none; }
+}
+
+.demo-header {
+  background: #0a1220;
+  border-bottom: 1px solid #131e2e;
+  padding: 11px 16px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.demo-dot {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.demo-dot-red    { background: #ef4444; }
+.demo-dot-yellow { background: #f59e0b; }
+.demo-dot-green  { background: #22c55e; }
+
+.demo-filename {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: #334155;
+  margin-left: 8px;
+  flex: 1;
+}
+
+.demo-vars-badge {
+  font-size: 10px;
+  font-family: system-ui, sans-serif;
+  color: #334155;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid #1e293b;
+  padding: 2px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.demo-body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 240px;
+}
+
+.demo-code-pane {
+  padding: 18px 20px;
+  border-right: 1px solid #0f172a;
+  overflow: hidden;
+  min-width: 0;
+}
+
+.demo-code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12.5px;
+  line-height: 1.8;
+  color: #e2e8f0;
+  margin: 0;
+  white-space: pre;
+  word-break: normal;
+}
+
+/* Blinking block cursor */
+.demo-cursor {
+  display: inline-block;
+  width: 7px;
+  height: 14px;
+  background: #00D9A3;
+  vertical-align: text-bottom;
+  border-radius: 1px;
+  animation: cursor-blink 0.9s step-end infinite;
+  margin-left: 1px;
+}
+
+@keyframes cursor-blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
+.demo-output-pane {
+  padding: 18px 20px;
+  background: rgba(0, 0, 0, 0.15);
+}
+
+.demo-output-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #1e293b;
+  font-family: system-ui, sans-serif;
+  margin-bottom: 12px;
+}
+
+.demo-output {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12.5px;
+  line-height: 1.8;
+  color: #94a3b8;
+  margin: 0;
+  white-space: pre-wrap;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+
+/* Status bar */
+.demo-statusbar {
+  border-top: 1px solid #0a1220;
+  padding: 7px 16px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: #334155;
+  background: #060b12;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-height: 32px;
+}
+
+.status-ready     { color: #22c55e; }
+.status-compiling { color: #FFB84D; }
+.status-success   { color: #00D9A3; }
+
+/* Responsive: stack demo panel on small screens */
+@media (max-width: 640px) {
+  .demo-body {
+    grid-template-columns: 1fr;
+  }
+  .demo-code-pane {
+    border-right: none;
+    border-bottom: 1px solid #0f172a;
+  }
+}
+
+/* ================================================================
+   FEATURE TILE ACCENT COLORS
+   ================================================================ */
+
+.feature-tile {
+  border-top: 2px solid transparent;
+}
+
+/* Brand palette exact matches from logo bars */
+.tile-teal { border-top-color: #00D9A3; }
+.tile-teal .feature-icon { background: rgba(0, 217, 163, 0.12); color: #00D9A3; }
+.tile-teal:hover { border-color: #00D9A3; box-shadow: 0 8px 40px rgba(0, 217, 163, 0.12), 0 0 0 1px rgba(0, 217, 163, 0.08); }
+
+.tile-sky { border-top-color: #4DB8FF; }
+.tile-sky .feature-icon { background: rgba(77, 184, 255, 0.12); color: #4DB8FF; }
+.tile-sky:hover { border-color: #4DB8FF; box-shadow: 0 8px 40px rgba(77, 184, 255, 0.1), 0 0 0 1px rgba(77, 184, 255, 0.08); }
+
+.tile-amber { border-top-color: #FFB84D; }
+.tile-amber .feature-icon { background: rgba(255, 184, 77, 0.12); color: #FFB84D; }
+.tile-amber:hover { border-color: #FFB84D; box-shadow: 0 8px 40px rgba(255, 184, 77, 0.1), 0 0 0 1px rgba(255, 184, 77, 0.08); }
+
+.tile-coral { border-top-color: #FF6B6B; }
+.tile-coral .feature-icon { background: rgba(255, 107, 107, 0.12); color: #FF6B6B; }
+.tile-coral:hover { border-color: #FF6B6B; box-shadow: 0 8px 40px rgba(255, 107, 107, 0.1), 0 0 0 1px rgba(255, 107, 107, 0.08); }
+
+.tile-violet { border-top-color: #A78BFA; }
+.tile-violet .feature-icon { background: rgba(167, 139, 250, 0.12); color: #A78BFA; }
+.tile-violet:hover { border-color: #A78BFA; box-shadow: 0 8px 40px rgba(167, 139, 250, 0.1), 0 0 0 1px rgba(167, 139, 250, 0.08); }
+
+.tile-emerald { border-top-color: #00D9A3; }
+.tile-emerald .feature-icon { background: rgba(0, 217, 163, 0.12); color: #00D9A3; }
+.tile-emerald:hover { border-color: #00D9A3; box-shadow: 0 8px 40px rgba(0, 217, 163, 0.1), 0 0 0 1px rgba(0, 217, 163, 0.08); }
+
+/* ================================================================
+   GRADIENT SECTION DIVIDERS
+   ================================================================ */
+
+.section-divider-gradient {
+  height: 1px;
+  background: linear-gradient(to right, transparent, #334155, transparent);
+  border: none;
+  margin: 0;
+}
+
+/* ================================================================
+   INSTALL STEPS — colored number badges
+   ================================================================ */
+
+.step-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.step-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: 700;
+  font-family: system-ui, sans-serif;
+  flex-shrink: 0;
+}
+
+.step-num-sky    { background: rgba(77, 184, 255, 0.15);  color: #4DB8FF;  border: 1px solid rgba(77, 184, 255, 0.3); }
+.step-num-emerald{ background: rgba(0, 217, 163, 0.15);   color: #00D9A3;  border: 1px solid rgba(0, 217, 163, 0.3); }
+.step-num-amber  { background: rgba(255, 184, 77, 0.15);  color: #FFB84D;  border: 1px solid rgba(255, 184, 77, 0.3); }
+.step-num-violet { background: rgba(167, 139, 250, 0.15); color: #A78BFA;  border: 1px solid rgba(167, 139, 250, 0.3); }
+
+.step-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #475569;
+}
+
+/* ================================================================
+   COMPARISON TABLE — "With PCL" header highlight
+   ================================================================ */
+
+.comparison-table th.col-with {
+  color: #00D9A3;
+}
+
+.comparison-table td.col-with {
+  color: #94a3b8;
+}
+
+

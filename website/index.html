@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PCL — Prompt Composition Language</title>
+  <meta name="description" content="PCL compiles modular .pcl files into plain text system prompts. Structured, version-controlled, and compatible with any LLM API." />
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="PCL — Prompt Composition Language" />
+  <meta property="og:description" content="Prompts deserve a proper language. PCL compiles modular .pcl files into plain text — works with any LLM API." />
+  <meta property="og:type" content="website" />
+
+  <!-- Tailwind Play CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            accent: '#818cf8',
+          }
+        }
+      }
+    };
+  </script>
+
+  <!-- JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;1,400&family=Syne:wght@700;800&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body class="bg-slate-900 text-slate-200 antialiased">
+
+  <!-- ================================================================
+       NAVIGATION
+       ================================================================ -->
+  <nav id="nav" class="fixed top-0 left-0 right-0 z-50 py-4 px-6 md:px-12">
+    <div class="max-w-6xl mx-auto flex items-center justify-between">
+
+      <!-- Logo -->
+      <a href="#hero" aria-label="PCL — Prompt Composition Language">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 28" width="88" height="21" aria-hidden="true">
+          <rect x="0" y="2"  width="18" height="3" rx="1.5" fill="#00D9A3"/>
+          <rect x="0" y="7"  width="13" height="3" rx="1.5" fill="#FF6B6B"/>
+          <rect x="0" y="12" width="16" height="3" rx="1.5" fill="#4DB8FF"/>
+          <rect x="0" y="17" width="10" height="3" rx="1.5" fill="#FFB84D"/>
+          <rect x="0" y="22" width="14" height="3" rx="1.5" fill="#A78BFA"/>
+          <text x="24" y="24" font-family="'Syne','Arial Black',sans-serif" font-weight="800" font-size="22" letter-spacing="-0.5" fill="#f4f2ed">PCL</text>
+        </svg>
+      </a>
+
+      <!-- Nav links + CTA -->
+      <div class="flex items-center gap-6 md:gap-8">
+        <a
+          href="https://github.com/cybergla/prompt-composition-language"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="text-sm text-slate-400 hover:text-white transition-colors hidden sm:inline"
+        >GitHub</a>
+        <button
+          disabled
+          aria-disabled="true"
+          title="Playground coming soon"
+          class="btn-primary text-sm py-2 px-4"
+        >
+          Try the playground
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+
+  <!-- ================================================================
+       HERO
+       ================================================================ -->
+  <section id="hero" class="relative min-h-screen flex items-center pt-28 pb-16 px-6">
+
+    <!-- Background effects — isolated overflow-hidden so they don't clip text content -->
+    <div class="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
+      <div class="orb orb-1"></div>
+      <div class="orb orb-2"></div>
+      <div class="orb orb-3"></div>
+      <div class="dot-grid absolute inset-0"></div>
+      <div
+        class="absolute inset-0"
+        style="background: radial-gradient(ellipse 100% 80% at 50% 50%, transparent 30%, #0f172a 90%);"
+      ></div>
+    </div>
+
+    <div class="relative z-10 max-w-6xl mx-auto w-full">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-12 items-center">
+
+        <!-- Left: text content -->
+        <div class="text-center lg:text-left min-w-0">
+
+          <h1 class="fade-up fade-up-delay-1 text-5xl md:text-6xl lg:text-6xl xl:text-7xl font-bold text-white mb-6 leading-tight tracking-tight">
+            Prompts deserve<br />a proper <span class="gradient-text">language.</span>
+          </h1>
+
+          <p class="fade-up fade-up-delay-2 text-lg text-slate-400 max-w-lg mx-auto lg:mx-0 mb-10 leading-relaxed">
+            PCL compiles modular <code>.pcl</code> files into plain text system prompts —
+            structured, version-controlled, and compatible with any LLM API.
+          </p>
+
+          <!-- CTAs -->
+          <div class="fade-up fade-up-delay-3 flex flex-wrap gap-4 justify-center lg:justify-start mb-10">
+            <button
+              disabled
+              aria-disabled="true"
+              title="Playground coming soon"
+              class="btn-primary"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <polygon points="5 3 19 12 5 21 5 3"/>
+              </svg>
+              Try the playground
+              <span class="text-xs opacity-50 font-normal">— soon</span>
+            </button>
+
+            <a
+              href="https://github.com/cybergla/prompt-composition-language"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="btn-secondary"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M12 2C6.477 2 2 6.477 2 12c0 4.418 2.865 8.165 6.839 9.489.5.09.682-.217.682-.482 0-.237-.009-.868-.013-1.703-2.782.603-3.369-1.342-3.369-1.342-.454-1.155-1.11-1.463-1.11-1.463-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.026A9.578 9.578 0 0 1 12 6.836a9.59 9.59 0 0 1 2.504.337c1.909-1.295 2.747-1.026 2.747-1.026.546 1.377.202 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.337 4.687-4.565 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.578.688.48C19.138 20.161 22 16.416 22 12c0-5.523-4.477-10-10-10z"/>
+              </svg>
+              View on GitHub
+            </a>
+          </div>
+
+          <!-- Install snippet -->
+          <div class="fade-up fade-up-delay-4 inline-flex flex-col items-center lg:items-start gap-2">
+            <p class="text-xs text-slate-600 uppercase tracking-widest">Install</p>
+            <div class="install-snippet">
+              <code>pip install pcl-lang</code>
+              <button id="copy-install" class="copy-btn" aria-label="Copy install command">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                  <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
+                </svg>
+                <span class="copy-tooltip" aria-live="polite">Copy</span>
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Right: live compile demo -->
+        <div class="demo-entrance min-w-0 w-full" aria-label="Live PCL compilation demo">
+          <div class="demo-panel">
+
+            <!-- Window chrome -->
+            <div class="demo-header">
+              <span class="demo-dot demo-dot-red"></span>
+              <span class="demo-dot demo-dot-yellow"></span>
+              <span class="demo-dot demo-dot-green"></span>
+              <span class="demo-filename" id="demo-filename">agent.pcl</span>
+              <span class="demo-vars-badge" id="demo-vars-badge" aria-hidden="true"></span>
+            </div>
+
+            <!-- Split: code left, output right -->
+            <div class="demo-body">
+              <div class="demo-code-pane">
+                <pre class="demo-code" aria-label="PCL source input"><code id="demo-code"></code><span class="demo-cursor" id="demo-cursor" aria-hidden="true"></span></pre>
+              </div>
+              <div class="demo-output-pane">
+                <div class="demo-output-label">compiled output</div>
+                <pre class="demo-output" id="demo-output" aria-live="polite"></pre>
+              </div>
+            </div>
+
+            <!-- Status bar -->
+            <div class="demo-statusbar">
+              <span id="demo-status" aria-live="polite">
+                <span class="status-dot status-ready">●</span> Ready
+              </span>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+
+  <hr class="section-divider-gradient" />
+
+  <!-- ================================================================
+       PROBLEM
+       ================================================================ -->
+  <section id="problem" class="py-24 px-6 bg-slate-900">
+    <div class="max-w-4xl mx-auto">
+
+      <p class="section-label">The problem</p>
+      <h2 class="text-3xl md:text-4xl font-bold text-white mb-8 leading-snug">
+        Production prompts outgrow their containers.
+      </h2>
+
+      <div class="space-y-5 text-slate-400 text-base leading-relaxed mb-14 max-w-2xl">
+        <p>
+          In production agentic systems, prompts accumulate quickly. Instructions, persona
+          definitions, tool descriptions, behavioral guidelines, conditional logic — they all
+          pile into a single string buried inside Python or TypeScript files. Reviewing a prompt
+          means reading past API client setup. A diff that changes two lines of prompt text is
+          invisible next to surrounding application code.
+        </p>
+        <p>
+          There is no mechanism for reuse. If two agents share a persona, that text gets copied.
+          When it changes, it needs to change in every place. Non-engineers who own prompt content
+          can't contribute without touching code. There is no format, no tooling, no discipline.
+        </p>
+        <p>
+          PCL addresses this directly. <code>.pcl</code> files are first-class artifacts —
+          structured, modular, and designed to live in version control alongside the rest of
+          your codebase.
+        </p>
+      </div>
+
+      <!-- Before / After comparison -->
+      <div class="overflow-x-auto rounded-xl border border-slate-800">
+        <table class="comparison-table">
+          <thead>
+            <tr>
+              <th>Without PCL</th>
+              <th class="col-with">With PCL</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Monolithic string in Python</td>
+              <td>Modular <code class="font-mono-custom text-xs bg-slate-800 px-1.5 py-0.5 rounded text-emerald-400">.pcl</code> files, one concern per file</td>
+            </tr>
+            <tr>
+              <td>Mixed with application logic</td>
+              <td>Prompt content separate from code</td>
+            </tr>
+            <tr>
+              <td>Unreadable diffs</td>
+              <td>Meaningful diffs — only changed lines</td>
+            </tr>
+            <tr>
+              <td>Copy-pasted content across agents</td>
+              <td><code class="font-mono-custom text-xs bg-slate-800 px-1.5 py-0.5 rounded text-purple-400">@include</code> shared blocks from a library</td>
+            </tr>
+            <tr>
+              <td>Hardcoded strings for variable content</td>
+              <td><code class="font-mono-custom text-xs bg-slate-800 px-1.5 py-0.5 rounded text-pink-400">${variable}</code> interpolated at render time</td>
+            </tr>
+            <tr>
+              <td>Engineers required for prompt edits</td>
+              <td>Prompt engineers work directly in <code class="font-mono-custom text-xs bg-slate-800 px-1.5 py-0.5 rounded text-emerald-400">.pcl</code> files</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ================================================================
+       FEATURES
+       ================================================================ -->
+  <section id="features" class="py-24 px-6" style="background: #090f1c;">
+    <div class="max-w-6xl mx-auto">
+
+      <div class="text-center max-w-xl mx-auto mb-16">
+        <p class="section-label">What PCL does</p>
+        <h2 class="text-3xl md:text-4xl font-bold text-white mb-4 leading-snug">
+          Everything prompts need. Nothing they don't.
+        </h2>
+        <p class="text-slate-400">
+          Six focused capabilities. No runtime dependencies. Compiles to a plain string
+          you drop into whatever API you're calling.
+        </p>
+      </div>
+
+      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+
+        <!-- Tile 1: Modular composition -->
+        <div class="feature-tile tile-teal">
+          <div class="feature-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="3" y="3" width="7" height="7" rx="1"/>
+              <rect x="14" y="3" width="7" height="7" rx="1"/>
+              <rect x="3" y="14" width="7" height="7" rx="1"/>
+              <rect x="14" y="14" width="7" height="7" rx="1"/>
+            </svg>
+          </div>
+          <h3>Modular composition</h3>
+          <p>
+            Break prompts into named <code>@block</code>s. Reference them anywhere with
+            <code>@include</code>. Reuse across multiple agent configurations without copying.
+          </p>
+        </div>
+
+        <!-- Tile 2: File imports -->
+        <div class="feature-tile tile-sky">
+          <div class="feature-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+              <line x1="12" y1="18" x2="12" y2="12"/>
+              <polyline points="9 15 12 12 15 15"/>
+            </svg>
+          </div>
+          <h3>File imports</h3>
+          <p>
+            <code>@import ./shared/persona.pcl</code> brings another file into scope.
+            Build a shared library of personas, tool descriptions, and guidelines that
+            multiple agents consume.
+          </p>
+        </div>
+
+        <!-- Tile 3: Conditional logic -->
+        <div class="feature-tile tile-amber">
+          <div class="feature-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12 3v6M6 9h12M6 9a6 6 0 006 6m0 0a6 6 0 006-6M12 15v6"/>
+            </svg>
+          </div>
+          <h3>Conditional logic</h3>
+          <p>
+            <code>@if variable:</code> includes content only when a variable is truthy.
+            <code>@if not variable:</code> for the inverse. Conditionals nest.
+            No comparison operators — stays simple by design.
+          </p>
+        </div>
+
+        <!-- Tile 4: Variable interpolation -->
+        <div class="feature-tile tile-coral">
+          <div class="feature-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polyline points="16 18 22 12 16 6"/>
+              <polyline points="8 6 2 12 8 18"/>
+            </svg>
+          </div>
+          <h3>Variable interpolation</h3>
+          <p>
+            <code>${variable}</code> is replaced at render time from a dictionary you provide.
+            Add a fallback with <code>${variable | default value}</code>.
+            Undefined variables with no default are a compile error.
+          </p>
+        </div>
+
+        <!-- Tile 5: Raw passthrough -->
+        <div class="feature-tile tile-violet">
+          <div class="feature-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+          </div>
+          <h3>Raw passthrough</h3>
+          <p>
+            <code>@raw</code> / <code>@end</code> passes content through completely
+            unmodified — no interpolation, no directive processing. Ideal for embedded
+            JSON, code examples, or anything containing PCL special characters.
+          </p>
+        </div>
+
+        <!-- Tile 6: Plain text output -->
+        <div class="feature-tile tile-emerald">
+          <div class="feature-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+              <line x1="16" y1="13" x2="8" y2="13"/>
+              <line x1="16" y1="17" x2="8" y2="17"/>
+              <polyline points="10 9 9 9 8 9"/>
+            </svg>
+          </div>
+          <h3>Plain text output</h3>
+          <p>
+            The compiled output is a single string. No PCL runtime in your application —
+            just pass the string to your LLM API. Works with OpenAI, Anthropic, Gemini,
+            local models, or any API that takes a system prompt.
+          </p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+
+  <hr class="section-divider-gradient" />
+
+  <!-- ================================================================
+       EXAMPLE — Annotated syntax
+       ================================================================ -->
+  <section id="example" class="py-24 px-6 bg-slate-900">
+    <div class="max-w-6xl mx-auto">
+
+      <div class="text-center max-w-xl mx-auto mb-14">
+        <p class="section-label">See it in action</p>
+        <h2 class="text-3xl md:text-4xl font-bold text-white mb-4 leading-snug">
+          A complete PCL file.
+        </h2>
+        <p class="text-slate-400">
+          A research assistant system prompt — demonstrating every major language feature
+          in one coherent file.
+        </p>
+      </div>
+
+      <!-- Code + Annotations layout -->
+      <div class="example-layout flex gap-8 items-start">
+
+        <!-- Code block (left) -->
+        <div class="flex-1 min-w-0">
+          <pre class="pcl-code" aria-label="Annotated PCL example: research assistant system prompt"><code><span class="code-line"><span class="pcl-frontmatter-delim">---</span><span class="anno-num" aria-label="Annotation 1">1</span></span><span class="code-line"><span class="pcl-fm-key">version</span>: 1.2</span><span class="code-line"><span class="pcl-fm-key">description</span>: Research assistant system prompt</span><span class="code-line"><span class="pcl-frontmatter-delim">---</span></span><span class="code-line"></span><span class="code-line"><span class="pcl-keyword">@import</span> <span class="pcl-path">./persona.pcl</span></span><span class="code-line"><span class="pcl-keyword">@import</span> <span class="pcl-path">./tools.pcl</span> <span class="pcl-keyword">as</span> tools<span class="anno-num" aria-label="Annotation 2">2</span></span><span class="code-line"></span><span class="code-line"><span class="pcl-comment"># Reusable date fragment</span></span><span class="code-line"><span class="pcl-keyword">@block</span> <span class="pcl-block-name">date_notice</span>:<span class="anno-num" aria-label="Annotation 3">3</span></span><span class="code-line">    Today&#39;s date is <span class="pcl-interp-delim">${</span><span class="pcl-var">date</span><span class="pcl-interp-delim">}</span>.</span><span class="code-line"></span><span class="code-line"><span class="pcl-comment"># A block composed from other blocks</span></span><span class="code-line"><span class="pcl-keyword">@block</span> <span class="pcl-block-name">agent_setup</span>:<span class="anno-num" aria-label="Annotation 4">4</span></span><span class="code-line">    <span class="pcl-keyword">@include</span> persona</span><span class="code-line">    <span class="pcl-keyword">@include</span> date_notice</span><span class="code-line">    <span class="pcl-keyword">@include</span> tools.search</span><span class="code-line">    <span class="pcl-keyword">@include</span> tools.browse</span><span class="code-line"></span><span class="code-line"><span class="pcl-comment"># Main prompt body</span></span><span class="code-line"><span class="pcl-plain">You are a research assistant.</span></span><span class="code-line"></span><span class="code-line"><span class="pcl-keyword">@include</span> agent_setup</span><span class="code-line"></span><span class="code-line"><span class="pcl-keyword">@if</span> premium:<span class="anno-num" aria-label="Annotation 5">5</span></span><span class="code-line">    <span class="pcl-plain">You also have access to the premium document index.</span></span><span class="code-line"></span><span class="code-line"><span class="pcl-keyword">@if not</span> premium:</span><span class="code-line">    <span class="pcl-plain">Upgrade to unlock the premium document index.</span></span><span class="code-line"></span><span class="code-line"><span class="pcl-comment"># Embed a literal JSON example without triggering interpolation</span></span><span class="code-line"><span class="pcl-keyword">@raw</span><span class="anno-num" aria-label="Annotation 6">6</span></span><span class="code-line"><span class="pcl-raw-content">    When calling a tool, use this format:</span></span><span class="code-line"><span class="pcl-raw-content">    {"tool": "${tool_name}", "args": {}}</span></span><span class="code-line"><span class="pcl-keyword">@end</span></span><span class="code-line"></span><span class="code-line"><span class="pcl-plain">The user&#39;s query is: </span><span class="pcl-interp-delim">${</span><span class="pcl-var">query</span> <span class="pcl-default">| no query provided</span><span class="pcl-interp-delim">}</span><span class="anno-num" aria-label="Annotation 7">7</span></span></code></pre>
+        </div>
+
+        <!-- Annotation list (right) -->
+        <aside class="w-72 flex-shrink-0 hidden lg:block" aria-label="Code annotations">
+          <div class="anno-list sticky top-24">
+
+            <div class="anno-item">
+              <span class="anno-num" aria-hidden="true">1</span>
+              <div>
+                <strong>Frontmatter</strong>
+                <p>YAML metadata between <code>---</code> delimiters. Available to callers via <code>.metadata</code> at compile time — never appears in compiled output.</p>
+              </div>
+            </div>
+
+            <div class="anno-item">
+              <span class="anno-num" aria-hidden="true">2</span>
+              <div>
+                <strong>Import with alias</strong>
+                <p><code>@import ./file.pcl as ns</code> brings another file into scope under a namespace. Without <code>as</code>, the filename stem is used.</p>
+              </div>
+            </div>
+
+            <div class="anno-item">
+              <span class="anno-num" aria-hidden="true">3</span>
+              <div>
+                <strong>Block definition</strong>
+                <p><code>@block name:</code> defines a named fragment. Body is indented 4 spaces. Blocks emit no output on their own — only when <code>@include</code>d.</p>
+              </div>
+            </div>
+
+            <div class="anno-item">
+              <span class="anno-num" aria-hidden="true">4</span>
+              <div>
+                <strong>Composed block</strong>
+                <p>A block body can <code>@include</code> other blocks — even from imported files. Complex prompts compose from focused, reusable pieces.</p>
+              </div>
+            </div>
+
+            <div class="anno-item">
+              <span class="anno-num" aria-hidden="true">5</span>
+              <div>
+                <strong>Conditional logic</strong>
+                <p><code>@if variable:</code> includes the indented body only when truthy. <code>@if not</code> for the inverse. Conditionals can nest.</p>
+              </div>
+            </div>
+
+            <div class="anno-item">
+              <span class="anno-num" aria-hidden="true">6</span>
+              <div>
+                <strong>Raw block</strong>
+                <p><code>@raw</code> / <code>@end</code> passes content through completely unmodified — no interpolation, no directive processing. Use for JSON, code, or anything with PCL special characters.</p>
+              </div>
+            </div>
+
+            <div class="anno-item">
+              <span class="anno-num" aria-hidden="true">7</span>
+              <div>
+                <strong>Variable with default</strong>
+                <p><code>${var | fallback}</code> uses the fallback if <code>var</code> is undefined at render time. Without a default, an undefined variable is a compile error.</p>
+              </div>
+            </div>
+
+          </div>
+        </aside>
+      </div>
+
+      <!-- Mobile: annotation list below code -->
+      <div class="mt-10 lg:hidden">
+        <h3 class="text-sm font-semibold text-slate-400 uppercase tracking-widest mb-6">Annotations</h3>
+        <div class="anno-list">
+
+          <div class="anno-item">
+            <span class="anno-num" aria-hidden="true">1</span>
+            <div>
+              <strong>Frontmatter</strong>
+              <p>YAML metadata between <code>---</code> delimiters. Available via <code>.metadata</code> at compile time — never appears in output.</p>
+            </div>
+          </div>
+
+          <div class="anno-item">
+            <span class="anno-num" aria-hidden="true">2</span>
+            <div>
+              <strong>Import with alias</strong>
+              <p><code>@import ./file.pcl as ns</code> brings another file into scope under a namespace.</p>
+            </div>
+          </div>
+
+          <div class="anno-item">
+            <span class="anno-num" aria-hidden="true">3</span>
+            <div>
+              <strong>Block definition</strong>
+              <p><code>@block name:</code> defines a named fragment. Emits no output until <code>@include</code>d.</p>
+            </div>
+          </div>
+
+          <div class="anno-item">
+            <span class="anno-num" aria-hidden="true">4</span>
+            <div>
+              <strong>Composed block</strong>
+              <p>A block body can <code>@include</code> other blocks, even across imported files.</p>
+            </div>
+          </div>
+
+          <div class="anno-item">
+            <span class="anno-num" aria-hidden="true">5</span>
+            <div>
+              <strong>Conditional logic</strong>
+              <p><code>@if variable:</code> and <code>@if not variable:</code> for truthiness-based inclusion. Nestable.</p>
+            </div>
+          </div>
+
+          <div class="anno-item">
+            <span class="anno-num" aria-hidden="true">6</span>
+            <div>
+              <strong>Raw block</strong>
+              <p><code>@raw</code> / <code>@end</code> passes content through completely unmodified.</p>
+            </div>
+          </div>
+
+          <div class="anno-item">
+            <span class="anno-num" aria-hidden="true">7</span>
+            <div>
+              <strong>Variable with default</strong>
+              <p><code>${var | fallback}</code> uses the fallback if the variable is undefined at render time.</p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ================================================================
+       PLAYGROUND TEASER (Phase 1 placeholder)
+       ================================================================ -->
+  <section id="playground" class="py-24 px-6" style="background: #090f1c;">
+    <div class="max-w-4xl mx-auto">
+
+      <div class="text-center mb-12">
+        <p class="section-label">Interactive playground</p>
+        <h2 class="text-3xl md:text-4xl font-bold text-white mb-4 leading-snug">
+          Try PCL in your browser.
+        </h2>
+        <p class="text-slate-400 max-w-xl mx-auto">
+          An interactive compiler — write PCL, set variables, see the compiled output instantly.
+          Powered by Pyodide. No install required.
+        </p>
+      </div>
+
+      <!-- Mock playground UI -->
+      <div class="playground-mock mb-8" aria-hidden="true">
+        <div class="playground-mock-toolbar">
+          <div class="mock-dot" style="background:#ef4444;"></div>
+          <div class="mock-dot" style="background:#f59e0b;"></div>
+          <div class="mock-dot" style="background:#22c55e;"></div>
+          <span style="margin-left:12px; font-family:'JetBrains Mono',monospace; font-size:12px; color:#334155;">PCL Playground</span>
+          <span style="margin-left:auto; font-size:12px; color:#1e293b; background:#1e293b; padding:4px 12px; border-radius:5px; font-family:system-ui,sans-serif;">Compile ▶</span>
+        </div>
+        <div class="playground-mock-body">
+          <div class="playground-mock-panel">
+            <div style="color:#6366f1;">---</div>
+            <div><span style="color:#38bdf8;">description</span>: My prompt</div>
+            <div style="color:#6366f1;">---</div>
+            <div style="margin-top:8px;"></div>
+            <div><span style="color:#c084fc;">@block</span> <span style="color:#fbbf24;">greeting</span>:</div>
+            <div>&nbsp;&nbsp;&nbsp;&nbsp;Hello, <span style="color:#6366f1;">${</span><span style="color:#f472b6;">name</span><span style="color:#6366f1;">}</span>!</div>
+            <div style="margin-top:8px;"></div>
+            <div><span style="color:#c084fc;">@include</span> greeting</div>
+          </div>
+          <div class="playground-mock-panel">
+            <div style="color:#334155; margin-bottom:8px; font-family:system-ui,sans-serif; font-size:11px; letter-spacing:0.05em; text-transform:uppercase;">Output</div>
+            <div style="color:#64748b; font-style:italic;">Hello, World!</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Coming soon notice -->
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-4 text-center">
+        <div class="inline-flex items-center gap-2 text-slate-500 text-sm bg-slate-800 border border-slate-700 rounded-lg px-5 py-3">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12 6 12 12 16 14"/>
+          </svg>
+          Playground coming soon
+        </div>
+        <a
+          href="https://github.com/cybergla/prompt-composition-language/issues"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="text-sm text-indigo-400 hover:text-indigo-300 transition-colors"
+        >
+          Follow progress on GitHub →
+        </a>
+      </div>
+
+    </div>
+  </section>
+
+
+  <hr class="section-divider-gradient" />
+
+  <!-- ================================================================
+       INSTALL / GETTING STARTED
+       ================================================================ -->
+  <section id="install" class="py-24 px-6 bg-slate-900">
+    <div class="max-w-3xl mx-auto">
+
+      <div class="text-center mb-14">
+        <p class="section-label">Getting started</p>
+        <h2 class="text-3xl md:text-4xl font-bold text-white mb-4 leading-snug">
+          Up and running in two minutes.
+        </h2>
+        <p class="text-slate-400">
+          Install the package, write a <code>.pcl</code> file, compile it — then pass
+          the output to your LLM API like any other string.
+        </p>
+      </div>
+
+      <div class="space-y-8">
+
+        <!-- Step 1: Install -->
+        <div>
+          <div class="step-header">
+            <span class="step-num step-num-sky">1</span>
+            <span class="step-label">Install</span>
+          </div>
+          <div class="code-block">
+            <span class="prompt">$ </span><span class="cmd">pip install pcl-lang</span>
+          </div>
+        </div>
+
+        <!-- Step 2: Write a .pcl file -->
+        <div>
+          <div class="step-header">
+            <span class="step-num step-num-emerald">2</span>
+            <span class="step-label">Write a <code class="font-mono-custom normal-case text-xs" style="color:#34d399;">.pcl</code> file</span>
+          </div>
+          <pre class="pcl-code" style="font-size:12.5px;"><code><span class="code-line"><span class="pcl-comment"># agent.pcl</span></span><span class="code-line"><span class="pcl-keyword">@block</span> <span class="pcl-block-name">persona</span>:</span><span class="code-line">    You are a helpful assistant.</span><span class="code-line"></span><span class="code-line"><span class="pcl-keyword">@include</span> persona</span><span class="code-line"></span><span class="code-line">The user asked: <span class="pcl-interp-delim">${</span><span class="pcl-var">query</span><span class="pcl-interp-delim">}</span></span></code></pre>
+        </div>
+
+        <!-- Step 3: Compile -->
+        <div>
+          <div class="step-header">
+            <span class="step-num step-num-amber">3</span>
+            <span class="step-label">Compile and render</span>
+          </div>
+          <div class="code-block">
+            <div><span class="comment"># validate without output</span></div>
+            <div><span class="prompt">$ </span><span class="cmd">pcl check agent.pcl</span></div>
+            <div style="margin-top:10px;"><span class="comment"># compile and print</span></div>
+            <div><span class="prompt">$ </span><span class="cmd">pcl compile agent.pcl</span></div>
+            <div style="margin-top:10px;"><span class="comment"># render with variables</span></div>
+            <div><span class="prompt">$ </span><span class="cmd">pcl render agent.pcl</span> <span class="flag">--var</span> <span class="arg">query="What is alignment?"</span></div>
+          </div>
+        </div>
+
+        <!-- Step 4: Python API -->
+        <div>
+          <div class="step-header">
+            <span class="step-num step-num-violet">4</span>
+            <span class="step-label">Or use the Python API</span>
+          </div>
+          <div class="code-block">
+            <div><span class="comment"># from your application code</span></div>
+            <div><span class="cmd">from pcl import render</span></div>
+            <div style="margin-top:10px;"><span class="cmd">prompt = render(</span></div>
+            <div><span class="cmd">&nbsp;&nbsp;&nbsp;&nbsp;"./agent.pcl"</span><span class="cmd">,</span></div>
+            <div><span class="cmd">&nbsp;&nbsp;&nbsp;&nbsp;variables={"query"</span><span class="cmd">: "What is alignment?"}</span></div>
+            <div><span class="cmd">)</span></div>
+            <div style="margin-top:10px;"><span class="comment"># pass `prompt` to your LLM API</span></div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Links -->
+      <div class="flex flex-wrap gap-4 mt-12">
+        <a
+          href="https://github.com/cybergla/prompt-composition-language"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="btn-secondary text-sm"
+        >
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M12 2C6.477 2 2 6.477 2 12c0 4.418 2.865 8.165 6.839 9.489.5.09.682-.217.682-.482 0-.237-.009-.868-.013-1.703-2.782.603-3.369-1.342-3.369-1.342-.454-1.155-1.11-1.463-1.11-1.463-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.026A9.578 9.578 0 0 1 12 6.836a9.59 9.59 0 0 1 2.504.337c1.909-1.295 2.747-1.026 2.747-1.026.546 1.377.202 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.337 4.687-4.565 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.578.688.48C19.138 20.161 22 16.416 22 12c0-5.523-4.477-10-10-10z"/>
+          </svg>
+          GitHub repository
+        </a>
+        <a
+          href="https://pypi.org/project/pcl-lang/"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="btn-secondary text-sm"
+        >
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/>
+            <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+            <line x1="12" y1="22.08" x2="12" y2="12"/>
+          </svg>
+          PyPI — pcl-lang
+        </a>
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ================================================================
+       FOOTER
+       ================================================================ -->
+  <footer class="py-10 px-6">
+    <div class="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-slate-600">
+
+      <div class="flex items-center gap-6">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 20" width="60" height="15" aria-label="PCL">
+          <rect x="0" y="1"  width="12" height="2.5" rx="1.25" fill="#00D9A3" opacity="0.6"/>
+          <rect x="0" y="5"  width="9"  height="2.5" rx="1.25" fill="#FF6B6B" opacity="0.6"/>
+          <rect x="0" y="9"  width="11" height="2.5" rx="1.25" fill="#4DB8FF" opacity="0.6"/>
+          <rect x="0" y="13" width="7"  height="2.5" rx="1.25" fill="#FFB84D" opacity="0.6"/>
+          <rect x="0" y="17" width="10" height="2.5" rx="1.25" fill="#A78BFA" opacity="0.6"/>
+          <text x="16" y="17" font-family="'Syne','Arial Black',sans-serif" font-weight="800" font-size="15" letter-spacing="-0.3" fill="#475569">PCL</text>
+        </svg>
+        <span>MIT License</span>
+        <a
+          href="https://github.com/cybergla/prompt-composition-language"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="hover:text-slate-400 transition-colors"
+        >GitHub</a>
+      </div>
+
+      <!-- PyPI version badge -->
+      <a
+        href="https://pypi.org/project/pcl-lang/"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="pcl-lang on PyPI"
+      >
+        <img
+          src="https://img.shields.io/pypi/v/pcl-lang?label=PyPI&color=818cf8&labelColor=1e293b&style=flat-square"
+          alt="PyPI version badge for pcl-lang"
+          height="20"
+          loading="lazy"
+        />
+      </a>
+
+    </div>
+  </footer>
+
+  <script src="main.js"></script>
+</body>
+</html>

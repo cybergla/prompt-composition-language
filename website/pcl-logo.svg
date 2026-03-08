@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 66" width="300" height="66">
+  <!-- All bars flush left (x=0). "Indented" lines are shorter on the right. -->
+  <rect x="0" y="5"  width="42" height="6" rx="3" fill="#00D9A3"/>
+  <rect x="0" y="16" width="30" height="6" rx="3" fill="#FF6B6B"/>
+  <rect x="0" y="27" width="38" height="6" rx="3" fill="#4DB8FF"/>
+  <rect x="0" y="38" width="24" height="6" rx="3" fill="#FFB84D"/>
+  <rect x="0" y="49" width="34" height="6" rx="3" fill="#A78BFA"/>
+  <text x="58" y="54" font-family="'Syne','Arial Black',sans-serif" font-weight="800" font-size="52" letter-spacing="-2" fill="#0e0e0f">PCL</text>
+</svg>
