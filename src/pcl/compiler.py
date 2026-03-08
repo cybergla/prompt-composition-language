@@ -29,25 +29,12 @@ from .parser import (
 from .datamodel import (
     Segment,
     Conditional,
-    VarRef
+    VarRef,
+    CompiledTemplate
 )
 
 # Matches ${var} or ${var | default}, and \${ (escaped)
 _INTERP_RE = re.compile(r"(\\?\$\{([^}]+)\})")
-
-
-# ---------------------------------------------------------------------------
-# CompiledTemplate — the result of compile()
-# ---------------------------------------------------------------------------
-
-
-@dataclass
-class CompiledTemplate:
-    """Result of compile(). All structural resolution is done; only variable
-    substitution and conditional evaluation remain."""
-
-    metadata: dict
-    segments: list[Segment]
 
 
 # ---------------------------------------------------------------------------
