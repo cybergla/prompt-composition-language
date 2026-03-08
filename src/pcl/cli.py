@@ -9,9 +9,11 @@ from typing import Optional
 import cbor2
 import typer
 
-from .compiler import (
+from .datamodel import (
     Conditional,
-    VarRef,
+    VarRef
+)
+from .compiler import (
     compile as pcl_compile,
     render as pcl_render,
     serialize as pcl_serialize,
