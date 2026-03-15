@@ -61,17 +61,12 @@
           rel="noopener noreferrer"
           class="text-sm text-slate-400 hover:text-white transition-colors hidden sm:inline"
         >GitHub</a>
-        <button
-          disabled
-          aria-disabled="true"
-          title="Playground coming soon"
-          class="btn-primary text-sm py-2 px-4"
-        >
+        <a href="#playground" class="btn-primary text-sm py-2 px-4">
           Try the playground
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M5 12h14M12 5l7 7-7 7"/>
           </svg>
-        </button>
+        </a>
       </div>
     </div>
   </nav>
@@ -111,18 +106,12 @@
 
           <!-- CTAs -->
           <div class="fade-up fade-up-delay-3 flex flex-wrap gap-4 justify-center lg:justify-start mb-10">
-            <button
-              disabled
-              aria-disabled="true"
-              title="Playground coming soon"
-              class="btn-primary"
-            >
+            <a href="#playground" class="btn-primary">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <polygon points="5 3 19 12 5 21 5 3"/>
               </svg>
               Try the playground
-              <span class="text-xs opacity-50 font-normal">— soon</span>
-            </button>
+            </a>
 
             <a
               href="https://github.com/cybergla/prompt-composition-language"
@@ -552,10 +541,10 @@
 
 
   <!-- ================================================================
-       PLAYGROUND TEASER (Phase 1 placeholder)
+       PLAYGROUND (M3 — interactive Pyodide compiler)
        ================================================================ -->
   <section id="playground" class="py-24 px-6" style="background: #090f1c;">
-    <div class="max-w-4xl mx-auto">
+    <div class="max-w-6xl mx-auto">
 
       <div class="text-center mb-12">
         <p class="section-label">Interactive playground</p>
@@ -563,55 +552,64 @@
           Try PCL in your browser.
         </h2>
         <p class="text-slate-400 max-w-xl mx-auto">
-          An interactive compiler — write PCL, set variables, see the compiled output instantly.
-          Powered by Pyodide. No install required.
+          Write PCL, set variables, see the compiled output instantly.
+          Powered by Pyodide — no install required.
         </p>
       </div>
 
-      <!-- Mock playground UI -->
-      <div class="playground-mock mb-8" aria-hidden="true">
-        <div class="playground-mock-toolbar">
-          <div class="mock-dot" style="background:#ef4444;"></div>
-          <div class="mock-dot" style="background:#f59e0b;"></div>
-          <div class="mock-dot" style="background:#22c55e;"></div>
-          <span style="margin-left:12px; font-family:'JetBrains Mono',monospace; font-size:12px; color:#334155;">PCL Playground</span>
-          <span style="margin-left:auto; font-size:12px; color:#1e293b; background:#1e293b; padding:4px 12px; border-radius:5px; font-family:system-ui,sans-serif;">Compile ▶</span>
-        </div>
-        <div class="playground-mock-body">
-          <div class="playground-mock-panel">
-            <div style="color:#6366f1;">---</div>
-            <div><span style="color:#38bdf8;">description</span>: My prompt</div>
-            <div style="color:#6366f1;">---</div>
-            <div style="margin-top:8px;"></div>
-            <div><span style="color:#c084fc;">@block</span> <span style="color:#fbbf24;">greeting</span>:</div>
-            <div>&nbsp;&nbsp;&nbsp;&nbsp;Hello, <span style="color:#6366f1;">${</span><span style="color:#f472b6;">name</span><span style="color:#6366f1;">}</span>!</div>
-            <div style="margin-top:8px;"></div>
-            <div><span style="color:#c084fc;">@include</span> greeting</div>
-          </div>
-          <div class="playground-mock-panel">
-            <div style="color:#334155; margin-bottom:8px; font-family:system-ui,sans-serif; font-size:11px; letter-spacing:0.05em; text-transform:uppercase;">Output</div>
-            <div style="color:#64748b; font-style:italic;">Hello, World!</div>
-          </div>
-        </div>
-      </div>
+      <!-- Playground container -->
+      <div class="pg-container">
 
-      <!-- Coming soon notice -->
-      <div class="flex flex-col sm:flex-row items-center justify-center gap-4 text-center">
-        <div class="inline-flex items-center gap-2 text-slate-500 text-sm bg-slate-800 border border-slate-700 rounded-lg px-5 py-3">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <circle cx="12" cy="12" r="10"/>
-            <polyline points="12 6 12 12 16 14"/>
-          </svg>
-          Playground coming soon
+        <!-- Toolbar -->
+        <div class="pg-toolbar">
+          <div class="pg-toolbar-left">
+            <select id="pg-example-select" class="pg-select" aria-label="Load example">
+              <option value="0">Hello PCL</option>
+              <option value="1">Blocks &amp; includes</option>
+              <option value="2">Conditionals</option>
+              <option value="3">Raw block</option>
+              <option value="4">Full example</option>
+            </select>
+            <button
+              id="pg-vars-toggle"
+              class="pg-btn-secondary"
+              aria-expanded="false"
+              aria-controls="pg-vars-panel"
+            >Variables</button>
+          </div>
+          <div class="pg-toolbar-right">
+            <button id="pg-compile-btn" class="pg-btn-primary" disabled aria-label="Compile PCL">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <polygon points="5 3 19 12 5 21 5 3"/>
+              </svg>
+              Compile
+            </button>
+            <button id="pg-copy-btn" class="pg-btn-secondary" aria-label="Copy compiled output">
+              Copy output
+            </button>
+          </div>
         </div>
-        <a
-          href="https://github.com/cybergla/prompt-composition-language/issues"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="text-sm text-indigo-400 hover:text-indigo-300 transition-colors"
-        >
-          Follow progress on GitHub →
-        </a>
+
+        <!-- Variables panel (hidden by default) -->
+        <div id="pg-vars-panel" class="pg-vars-panel" hidden>
+          <div id="pg-vars-rows"></div>
+          <button id="pg-add-var" class="pg-btn-secondary" style="margin-top:10px; font-size:12px;">
+            + Add variable
+          </button>
+        </div>
+
+        <!-- Body: editor | output -->
+        <div class="pg-body">
+          <div id="pg-editor-cm" class="pg-editor-cm" aria-label="PCL source editor"></div>
+          <pre id="pg-output" class="pg-output" aria-live="polite" aria-label="Compiled output"></pre>
+        </div>
+
+        <!-- Status bar -->
+        <div class="pg-statusbar" role="status" aria-live="polite">
+          <span id="pg-status-dot" class="pg-status-dot pg-dot-loading">&#9679;</span>
+          <span id="pg-status-msg">Loading compiler&hellip;</span>
+        </div>
+
       </div>
 
     </div>
@@ -769,5 +767,11 @@
   </footer>
 
   <script src="main.js"></script>
+  <!-- CodeMirror 5 — loaded as global, no ES module CDN needed -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/codemirror@5.65.16/lib/codemirror.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.16/lib/codemirror.min.js"></script>
+  <!-- Pyodide -->
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.27.5/full/pyodide.js"></script>
+  <script src="playground.js" defer></script>
 </body>
 </html>
