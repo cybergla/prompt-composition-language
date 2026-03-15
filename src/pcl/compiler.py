@@ -16,16 +16,15 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from .errors import PCLError
-from .parser import (
+from .datamodel.ast import (
     BlockDefNode,
     IfNode,
-    ImportNode,
     IncludeNode,
     ParsedFile,
     RawNode,
     TextNode,
-    parse_file,
 )
+from .parser import parse_file
 from .datamodel import (
     Segment,
     Conditional,
@@ -57,11 +56,10 @@ class _Compiler:
     def __init__(self) -> None:
         self._file_cache: dict[str, ParsedFile] = {}
 
-    # ------------------------------------------------------------------
-    # File loading + circular import detection
-    # ------------------------------------------------------------------
-
     def load(self, path: Path, load_stack: frozenset[str] = frozenset()) -> ParsedFile:
+        """
+        File loading + circular import detection
+        """
         key = str(path.resolve())
         if key in load_stack:
             raise PCLError(f"Circular import detected: {path.name}")
